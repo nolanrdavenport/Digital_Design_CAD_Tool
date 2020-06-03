@@ -186,17 +186,9 @@ public class Main extends Application{
 	 * This method creates a new schematic and adds it to the tab pane. 
 	 */
 	public void createSchematic() {
-		/*
-		Tab newSchematic = new Tab("schematic", new Label("[TODO: make schematic system]"));
-		tabPane.getTabs().add(newSchematic);
-		*/
 		ScrollPane sPane = new ScrollPane();
-		Canvas schematicCanvas = new Canvas(2000,2000);
-		GraphicsContext gc = schematicCanvas.getGraphicsContext2D();
-		gc.fillRect(100,  100, 500, 500);
-		gc.setFill(Color.GREEN);
-		gc.fillRect(200, 200, 50, 50);
-		sPane.setContent(schematicCanvas);
+		Schematic schematic = new Schematic(2000,2000);
+		sPane.setContent(schematic);
 		Tab newSchematic = new Tab("schematic", sPane);
 		tabPane.getTabs().add(newSchematic);
 	}
