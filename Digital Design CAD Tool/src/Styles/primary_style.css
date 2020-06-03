@@ -1,0 +1,7 @@
+.text-area *.text {
+    -fx-text-alignment: center;
+}
+
+.text-area {
+    -fx-font-size: 4em;
+}
