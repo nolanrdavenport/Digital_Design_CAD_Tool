@@ -36,7 +36,7 @@ public class Schematic extends Canvas {
 		gc.fillRect(0, 0, width, height);
 
 		this.setOnMouseClicked(event -> {
-			if (event.getButton() == MouseButton.PRIMARY) {
+			if (event.getButton() == MouseButton.PRIMARY && main.selectedItem != "NONE" && !main.selectedItem.contains("~")) {
 				Image andImage = new Image("Images/" + main.selectedItem + ".png", 60, 40, false, false);
 				gc.drawImage(andImage, (event.getX() - (event.getX() % 10)), (event.getY() - (event.getY() % 10)));
 			}
@@ -44,12 +44,12 @@ public class Schematic extends Canvas {
 
 		tabPane.setOnMousePressed(event -> {
 			if (event.getButton() == MouseButton.MIDDLE) {
-				mouseX = event.getX();
-				mouseY = event.getY();
+				mouseX = event.getScreenX();
+				mouseY = event.getScreenY();
 			}
 		});
 
-		tabPane.setOnMouseDragged(event -> {
+		this.setOnMouseDragged(event -> {
 			if (event.getButton() == MouseButton.MIDDLE) {
 				middleMouseDragged(event);
 			}
@@ -60,17 +60,16 @@ public class Schematic extends Canvas {
 	}
 
 	public void middleMouseDragged(MouseEvent event) {		
-		double deltaX = event.getX() - mouseX;
-		double deltaY = event.getY() - mouseY;
+		double deltaX = event.getScreenX() - mouseX;
+		double deltaY = event.getScreenY() - mouseY;
 		// this.relocate(getLayoutX() + deltaX, getLayoutY() + deltaY);
 		this.setTranslateX(this.getTranslateX() + deltaX);
 		this.setTranslateY(this.getTranslateY() + deltaY);
-		mouseX = event.getX();
-		mouseY = event.getY();
+		mouseX = event.getScreenX();
+		mouseY = event.getScreenY();
 	}
 	
 	public void createGridLines() {
-		gc.setFill(Color.GREEN);
         gc.setStroke(Color.rgb(50,50,50,0.5));
         gc.setLineWidth(1);
         for(int i = 10; i < height; i += 10) {
@@ -86,7 +85,16 @@ public class Schematic extends Canvas {
 		if (direction == 1) {
 			zoomFactor = 2.0 - zoomFactor;
 		}
-		this.setScaleX(this.getScaleX() * zoomFactor);
-		this.setScaleY(this.getScaleY() * zoomFactor);
+		if((zoomFactor > 1 && this.getScaleY() < 2.5) || (zoomFactor < 1 && this.getScaleY() > 0.5)) {
+			this.setScaleX(this.getScaleX() * zoomFactor);
+			this.setScaleY(this.getScaleY() * zoomFactor);
+		}
+	}
+	
+	public void refresh() {
+		gc.clearRect(0, 0, width, height);
+		gc.setFill(Color.BLACK);
+		gc.fillRect(0, 0, width, height);
+		createGridLines();
 	}
 }

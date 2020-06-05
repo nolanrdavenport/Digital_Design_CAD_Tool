@@ -39,7 +39,7 @@ public class Main extends Application {
 	public MenuBar menuBar;
 	public TabPane tabPane;
 	public Scene scene;
-	public String selectedItem;
+	public String selectedItem = "NONE";
 	public ArrayList<Schematic> schematics;
 	public TabPane controlTabPane;
 
@@ -56,19 +56,7 @@ public class Main extends Application {
 		SplitPane splitPane = new SplitPane();
 		TabPane tabPane = new TabPane();
 		HBox tabContainer = new HBox(tabPane);
-	
-		/*
-		ScrollPane componentScrollPane = new ScrollPane();
-		VBox componentContainer_vert1 = new VBox();
-		setupToolBarLeft(componentContainer_vert1);
-		VBox componentContainer_vert2 = new VBox();
-		setupToolBarRight(componentContainer_vert2);
-		HBox componentContainer = new HBox();
-		componentContainer.getChildren().add(componentContainer_vert1);
-		componentContainer.getChildren().add(new Separator());
-		componentContainer.getChildren().add(componentContainer_vert2);
-		componentScrollPane.setContent(componentContainer);
-		*/
+		
 		TabPane controlTabPane = new TabPane();
 		this.controlTabPane = controlTabPane;
 		
@@ -190,6 +178,13 @@ public class Main extends Application {
 		projectMenu.getItems().add(openProjectItem);
 		projectMenu.getItems().add(closeProjectItem);
 		projectMenu.getItems().add(propertiesItem);
+		
+		// Window Menu
+		Menu windowMenu = new Menu("Window");
+		MenuItem toolTabItem = new MenuItem("Tools");
+		MenuItem componentTabItem = new MenuItem("Components");
+		windowMenu.getItems().add(toolTabItem);
+		windowMenu.getItems().add(componentTabItem);
 
 		// Help Menu
 		Menu helpMenu = new Menu("Help");
@@ -201,51 +196,12 @@ public class Main extends Application {
 		menuBar.getMenus().add(fileMenu);
 		menuBar.getMenus().add(editMenu);
 		menuBar.getMenus().add(projectMenu);
+		menuBar.getMenus().add(windowMenu);
 		menuBar.getMenus().add(helpMenu);
 
 		return menuBar;
 	}
 
-	/*
-	 * These are methods that set up the tool bar. TODO: MAKE A BETTER VERSION OF
-	 * THIS SHIT. This is temp
-	 */
-	public void setupToolBarLeft(VBox container) {
-		Image andImage = new Image("Images/AND_image.png", 60, 40, false, false);
-		Button andButton = new Button();
-		andButton.setOnAction(e -> {
-			selectedItem = "AND";
-		});
-		andButton.setGraphic(new ImageView(andImage));
-		container.getChildren().add(andButton);
-
-		Image orImage = new Image("Images/OR_image.png", 60, 40, false, false);
-		Button orButton = new Button();
-		orButton.setOnAction(e -> {
-			selectedItem = "OR";
-		});
-		orButton.setGraphic(new ImageView(orImage));
-		container.getChildren().add(orButton);
-	}
-
-	public void setupToolBarRight(VBox container) {
-		Image nandImage = new Image("Images/NAND_image.png", 60, 40, false, false);
-		Button nandButton = new Button();
-		nandButton.setOnAction(e -> {
-			selectedItem = "NAND";
-		});
-		nandButton.setGraphic(new ImageView(nandImage));
-		container.getChildren().add(nandButton);
-
-		Image norImage = new Image("Images/NOR_image.png", 60, 40, false, false);
-		Button norButton = new Button();
-		norButton.setOnAction(e -> {
-			selectedItem = "NOR";
-		});
-		norButton.setGraphic(new ImageView(norImage));
-		container.getChildren().add(norButton);
-	}
-	
 	public void setupComponentTab(GridPane grid) {
 		Image andImage = new Image("Images/AND_image.png", 60, 40, false, false);
 		Button andButton = new Button();
@@ -283,8 +239,25 @@ public class Main extends Application {
 		Tab componentTab = new Tab("Components", componentScrollPane);
 		controlTabPane.getTabs().add(componentTab);
 	}
+	
 	public void setupToolTab(GridPane grid) {
 		//TODO: Finish this method
+		Image selectImage = new Image("Images/Select.png", 40, 40, false, false);
+		Button selectButton = new Button();
+		selectButton.setOnAction(e -> {
+			selectedItem = "~SELECT";
+		});
+		selectButton.setGraphic(new ImageView(selectImage));
+		grid.add(selectButton, 0, 0, 1, 1);
+		
+		Image textImage = new Image("Images/Text.png", 40, 40, false, false);
+		Button textButton = new Button();
+		textButton.setOnAction(e -> {
+			selectedItem = "~TEXT";
+		});
+		textButton.setGraphic(new ImageView(textImage));
+		grid.add(textButton, 1, 0, 1, 1);
+		
 		ScrollPane toolScrollPane = new ScrollPane(grid);
 		Tab toolTab = new Tab("Tools", toolScrollPane);
 		controlTabPane.getTabs().add(toolTab);
