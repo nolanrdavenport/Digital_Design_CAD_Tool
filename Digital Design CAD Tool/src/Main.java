@@ -3,7 +3,6 @@ import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.stage.Stage;
-import javafx.util.Duration;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
@@ -11,7 +10,6 @@ import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
@@ -265,6 +263,15 @@ public class Main extends Application {
 		});
 		textButton.setGraphic(new ImageView(textImage));
 		grid.add(textButton, 1, 0, 1, 1);
+		
+		Image wireImage = new Image("Images/Wire.png", 40, 40, false, false);
+		Button wireButton = new Button();
+		wireButton.setOnAction(e -> {
+			selectedItem = "~WIRE";
+			scene.setCursor(Cursor.DEFAULT);
+		});
+		wireButton.setGraphic(new ImageView(wireImage));
+		grid.add(wireButton, 0, 1, 1, 1);
 		
 		ScrollPane toolScrollPane = new ScrollPane(grid);
 		Tab toolTab = new Tab("Tools", toolScrollPane);
