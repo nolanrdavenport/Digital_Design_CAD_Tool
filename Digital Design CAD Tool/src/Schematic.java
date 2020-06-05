@@ -1,17 +1,13 @@
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.event.Event;
-import javafx.event.EventHandler;
+import java.util.ArrayList;
+
+import components.*;
+import javafx.scene.Cursor;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.TabPane;
 import javafx.scene.image.Image;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.input.ScrollEvent;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 
 public class Schematic extends Canvas {
@@ -23,9 +19,12 @@ public class Schematic extends Canvas {
 
 	private double mouseX;
 	private double mouseY;
-
+	
+	public ArrayList<Component> components;
+	
 	public Schematic(Main main, TabPane tabPane, int width, int height) {
 		super(width, height);
+		components = new ArrayList<Component>();
 		this.tabPane = tabPane;
 		this.height = height;
 		this.width = width;
@@ -37,8 +36,7 @@ public class Schematic extends Canvas {
 
 		this.setOnMouseClicked(event -> {
 			if (event.getButton() == MouseButton.PRIMARY && main.selectedItem != "NONE" && !main.selectedItem.contains("~")) {
-				Image andImage = new Image("Images/" + main.selectedItem + ".png", 60, 40, false, false);
-				gc.drawImage(andImage, (event.getX() - (event.getX() % 10)), (event.getY() - (event.getY() % 10)));
+				placeItem(main.selectedItem, event);
 			}
 		});
 
@@ -46,6 +44,7 @@ public class Schematic extends Canvas {
 			if (event.getButton() == MouseButton.MIDDLE) {
 				mouseX = event.getScreenX();
 				mouseY = event.getScreenY();
+				main.scene.setCursor(Cursor.OPEN_HAND);
 			}
 		});
 
@@ -55,6 +54,15 @@ public class Schematic extends Canvas {
 			}
 		});
 		
+		tabPane.setOnMouseReleased(event -> {
+			if(event.getButton() == MouseButton.MIDDLE) {
+				if(!main.selectedItem.contains("~") && main.selectedItem != "NONE") {
+					main.scene.setCursor(Cursor.CROSSHAIR);
+				}else {
+					main.scene.setCursor(Cursor.DEFAULT);
+				}
+			}
+		});
 		createGridLines();
 
 	}
@@ -96,5 +104,32 @@ public class Schematic extends Canvas {
 		gc.setFill(Color.BLACK);
 		gc.fillRect(0, 0, width, height);
 		createGridLines();
+	}
+	
+	public void placeItem(String selectedItem, MouseEvent event) {
+		switch(selectedItem) {
+			case "AND":	
+				components.add(new AndGate((event.getX() - (event.getX() % 10)), (event.getY() - (event.getY() % 10)), "right", 2));
+				break;
+			case "OR":
+				components.add(new OrGate((event.getX() - (event.getX() % 10)), (event.getY() - (event.getY() % 10)), "right", 2));
+				break;
+			case "NAND":
+				components.add(new NandGate((event.getX() - (event.getX() % 10)), (event.getY() - (event.getY() % 10)), "right", 2));
+				break;
+			case "NOR":
+				components.add(new NorGate((event.getX() - (event.getX() % 10)), (event.getY() - (event.getY() % 10)), "right", 2));
+				break;
+			default :
+				System.err.println("This is not a valid component ID");
+		}
+		
+		System.out.println("Components:");
+		for(Component comp : components) {
+			System.out.println(comp + " " + comp.xPos + " " + comp.yPos);
+		}
+		
+		Image image = new Image("Images/" + selectedItem + ".png", 60, 40, false, false);
+		gc.drawImage(image, (event.getX() - (event.getX() % 10)), (event.getY() - (event.getY() % 10)));
 	}
 }

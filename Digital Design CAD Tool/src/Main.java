@@ -1,36 +1,28 @@
 import java.util.ArrayList;
-
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.event.Event;
-import javafx.event.EventHandler;
-import javafx.geometry.Orientation;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Separator;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.ToolBar;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
+import javafx.scene.Cursor;
 import javafx.scene.Scene;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 
 public class Main extends Application {
@@ -85,11 +77,7 @@ public class Main extends Application {
 		});
 
 		// adding welcome text tab
-		TextArea welcomeText = new TextArea();
-		welcomeText.appendText("Welcome to the Digital Design CAD Tool!");
-		welcomeText.appendText("\nChoose [File] -> [New] -> [Schematic] to make a new schematic.");
-		welcomeText.setEditable(false);
-		Tab welcomeTab = new Tab("Welcome", welcomeText);
+		Tab welcomeTab = createWelcomeTab();
 		tabPane.getTabs().add(welcomeTab);
 
 		// Add menu bar and split pane to the scene
@@ -124,6 +112,20 @@ public class Main extends Application {
 		this.scene = scene;
 		
 		
+	}
+	
+	public Tab createWelcomeTab() {
+		TextArea welcomeText = new TextArea();
+		welcomeText.appendText("Welcome to the Digital Design CAD Tool!");
+		welcomeText.appendText("\nChoose [File] -> [New] -> [Schematic] to make a new schematic.");
+		welcomeText.appendText("\n\nPress [MIDDLE MOUSE] to drag the schematic. \nThat is a necessary feature!");
+		welcomeText.appendText("\n\nDrop components by selecting them from the [Components] tab. \nYour cursor will become a crosshair.");
+		welcomeText.appendText("\n\nIn order to move components that have already been dropped into \nthe schematic, select the [Select] tool which is located in the [Tools] tab");
+		welcomeText.setEditable(false);
+		
+		Tab welcomeTab = new Tab("Welcome", welcomeText);
+		
+		return welcomeTab;
 	}
 
 	/*
@@ -207,6 +209,7 @@ public class Main extends Application {
 		Button andButton = new Button();
 		andButton.setOnAction(e -> {
 			selectedItem = "AND";
+			scene.setCursor(Cursor.CROSSHAIR);
 		});
 		andButton.setGraphic(new ImageView(andImage));
 		grid.add(andButton, 0, 0, 1, 1);
@@ -215,6 +218,7 @@ public class Main extends Application {
 		Button orButton = new Button();
 		orButton.setOnAction(e -> {
 			selectedItem = "OR";
+			scene.setCursor(Cursor.CROSSHAIR);
 		});
 		orButton.setGraphic(new ImageView(orImage));
 		grid.add(orButton, 1, 0, 1, 1);
@@ -223,6 +227,7 @@ public class Main extends Application {
 		Button nandButton = new Button();
 		nandButton.setOnAction(e -> {
 			selectedItem = "NAND";
+			scene.setCursor(Cursor.CROSSHAIR);
 		});
 		nandButton.setGraphic(new ImageView(nandImage));
 		grid.add(nandButton, 0, 1, 1, 1);
@@ -231,6 +236,7 @@ public class Main extends Application {
 		Button norButton = new Button();
 		norButton.setOnAction(e -> {
 			selectedItem = "NOR";
+			scene.setCursor(Cursor.CROSSHAIR);
 		});
 		norButton.setGraphic(new ImageView(norImage));
 		grid.add(norButton, 1, 1, 1, 1);
@@ -246,6 +252,7 @@ public class Main extends Application {
 		Button selectButton = new Button();
 		selectButton.setOnAction(e -> {
 			selectedItem = "~SELECT";
+			scene.setCursor(Cursor.DEFAULT);
 		});
 		selectButton.setGraphic(new ImageView(selectImage));
 		grid.add(selectButton, 0, 0, 1, 1);
@@ -254,6 +261,7 @@ public class Main extends Application {
 		Button textButton = new Button();
 		textButton.setOnAction(e -> {
 			selectedItem = "~TEXT";
+			scene.setCursor(Cursor.TEXT);
 		});
 		textButton.setGraphic(new ImageView(textImage));
 		grid.add(textButton, 1, 0, 1, 1);
