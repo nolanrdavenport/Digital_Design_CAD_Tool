@@ -6,9 +6,11 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.TabPane;
 import javafx.scene.image.Image;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
+import javafx.scene.transform.Rotate;
 
 public class Schematic extends Canvas {
 	public int width, height;
@@ -58,6 +60,8 @@ public class Schematic extends Canvas {
 				// If no item is selected, unselect the previously selected item
 				if(!selectedAnItem) {
 					for(Component comp : components) {
+						comp.setX(comp.getX() - (comp.getX() % 10));
+						comp.setY(comp.getY() - (comp.getY() % 10));
 						comp.selected = false;
 					}
 				}
@@ -104,6 +108,17 @@ public class Schematic extends Canvas {
 					main.scene.setCursor(Cursor.DEFAULT);
 				}
 			}
+			if(event.getButton() == MouseButton.PRIMARY && selectedComponent != null) {
+				refresh();
+			}
+		});
+		
+		main.scene.setOnKeyPressed(event -> {
+			if(event.getCode() == KeyCode.R && selectedComponent != null) {
+				//TODO: rotate clockwise
+				selectedComponent.rotate();
+				refresh();
+			}
 		});
 		createGridLines();
 
@@ -149,7 +164,9 @@ public class Schematic extends Canvas {
 		createGridLines();
 
 		for (Component comp : components) {
-			gc.drawImage(comp.image, (comp.xPos - (comp.xPos % 10)), (comp.yPos - (comp.yPos % 10)));
+			//gc.drawImage(comp.image, (comp.xPos - (comp.xPos % 10)), (comp.yPos - (comp.yPos % 10)));
+			comp.drawComponent(gc);
+			
 			if (comp.selected == true) {
 				selectComponent(comp);
 			}
@@ -160,19 +177,19 @@ public class Schematic extends Canvas {
 		switch (selectedItem) {
 		case "AND":
 			components.add(new AndGate((event.getX() - (event.getX() % 10)), (event.getY() - (event.getY() % 10)),
-					"right", 2));
+					0, 2));
 			break;
 		case "OR":
 			components.add(
-					new OrGate((event.getX() - (event.getX() % 10)), (event.getY() - (event.getY() % 10)), "right", 2));
+					new OrGate((event.getX() - (event.getX() % 10)), (event.getY() - (event.getY() % 10)), 0, 2));
 			break;
 		case "NAND":
 			components.add(new NandGate((event.getX() - (event.getX() % 10)), (event.getY() - (event.getY() % 10)),
-					"right", 2));
+					0, 2));
 			break;
 		case "NOR":
 			components.add(new NorGate((event.getX() - (event.getX() % 10)), (event.getY() - (event.getY() % 10)),
-					"right", 2));
+					0, 2));
 			break;
 		default:
 			System.err.println("This is not a valid component ID");
@@ -183,8 +200,14 @@ public class Schematic extends Canvas {
 	}
 
 	public void selectComponent(Component comp) {
-		gc.setStroke(Color.WHITE);
-		gc.strokeRect((comp.xPos - (comp.xPos % 10)), (comp.yPos - (comp.yPos % 10)), comp.width, comp.height);
-		selectedComponent = comp;
+		if(comp.rotation == 0 || comp.rotation == 2) {
+			gc.setStroke(Color.WHITE);
+			gc.strokeRect((comp.xPos - (comp.xPos % 10)), (comp.yPos - (comp.yPos % 10)), comp.width, comp.height);
+			selectedComponent = comp;
+		}else {
+			gc.setStroke(Color.WHITE);
+			gc.strokeRect((comp.xPos - (comp.xPos % 10)), (comp.yPos - (comp.yPos % 10)), comp.height, comp.width);
+			selectedComponent = comp;
+		}
 	}
 }

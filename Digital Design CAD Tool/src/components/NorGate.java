@@ -5,7 +5,7 @@ public class NorGate extends Component{
 	public boolean[] inputs;
 	public boolean[] outputs = new boolean[1];
 	public int numInputs;
-	public NorGate(double xPos, double yPos, String rotation, int numInputs) {
+	public NorGate(double xPos, double yPos, int rotation, int numInputs) {
 		super(xPos, yPos, rotation);
 		inputs = new boolean[numInputs];
 		this.numInputs = numInputs;
