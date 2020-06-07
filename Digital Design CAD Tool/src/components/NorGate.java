@@ -1,18 +1,20 @@
 package components;
 import components.Component;
+import javafx.scene.canvas.Canvas;
 import javafx.scene.image.Image;
 public class NorGate extends Component{
 	public boolean[] inputs;
 	public boolean[] outputs = new boolean[1];
 	public int numInputs;
-	public NorGate(double xPos, double yPos, int rotation, int numInputs) {
-		super(xPos, yPos, rotation);
+	public NorGate(double xPos, double yPos, int rotation, Canvas canvas, int numInputs) {
+		super(xPos, yPos, rotation, canvas);
 		inputs = new boolean[numInputs];
 		this.numInputs = numInputs;
 		this.id = "NOR";
-		this.image = new Image("Images/NOR.png", 60, 40, false, false);
-		this.width = 60;
-		this.height = 40;
+		for(int i = 0; i < this.images.length; i++) {
+			images[i] = new Image("Images/NOR/NOR_"+i+".png");
+		}
+		this.currImage = images[0];
 	}
 	public void setOutput(){
 		outputs[0] = false;

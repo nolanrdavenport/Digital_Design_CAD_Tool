@@ -18,19 +18,30 @@ public class Schematic extends Canvas {
 	public GraphicsContext gc;
 	public TabPane tabPane;
 	public Main main;
-
+	
+	// For dragging the viewport around
 	private double mouseX;
 	private double mouseY;
+	
+	// For dragging components around
 	private double compMouseX;
 	private double compMouseY;
 
+	// For making wires
+	private double wireStartX;
+	private double wireStartY;
+	private double wireEndX;
+	private double wireEndY;
+	
 	public ArrayList<Component> components;
+	public ArrayList<Wire> wires;
 	
 	Component selectedComponent = null;
 
 	public Schematic(Main main, TabPane tabPane, int width, int height) {
 		super(width, height);
 		components = new ArrayList<Component>();
+		wires = new ArrayList<Wire>();
 		this.tabPane = tabPane;
 		this.height = height;
 		this.width = width;
@@ -60,10 +71,10 @@ public class Schematic extends Canvas {
 				// If no item is selected, unselect the previously selected item
 				if(!selectedAnItem) {
 					for(Component comp : components) {
-						comp.setX(comp.getX() - (comp.getX() % 10));
-						comp.setY(comp.getY() - (comp.getY() % 10));
+						comp.square();
 						comp.selected = false;
 					}
+					selectedComponent = null;
 				}
 				refresh();
 			}
@@ -75,18 +86,19 @@ public class Schematic extends Canvas {
 				mouseX = event.getScreenX();
 				mouseY = event.getScreenY();
 				main.scene.setCursor(Cursor.MOVE);
-			}
-			if(event.getButton() == MouseButton.PRIMARY) {
+			}else if(event.getButton() == MouseButton.PRIMARY && main.selectedItem == "~SELECT") {
 				compMouseX = event.getX();
 				compMouseY = event.getY();
+			}else if(event.getButton() == MouseButton.PRIMARY && main.selectedItem == "~WIRE") {				
+				wireStartX = event.getX();
+				wireStartY = event.getY();
 			}
 		});
 
 		this.setOnMouseDragged(event -> {
 			if (event.getButton() == MouseButton.MIDDLE) {
 				middleMouseDragged(event);
-			}
-			if(event.getButton() == MouseButton.PRIMARY && selectedComponent != null) {
+			}else if(event.getButton() == MouseButton.PRIMARY && selectedComponent != null && main.selectedItem == "~SELECT") {
 				double deltaX = event.getX() - compMouseX;
 				double deltaY = event.getY() - compMouseY;
 				selectedComponent.setX(selectedComponent.getX() + deltaX);
@@ -97,6 +109,11 @@ public class Schematic extends Canvas {
 				
 				
 				refresh();
+			}else if(event.getButton() == MouseButton.PRIMARY && main.selectedItem == "~WIRE") {				
+				wireEndX = event.getX();
+				wireEndY = event.getY();
+				
+				renderCurrentWire();
 			}
 		});
 
@@ -107,15 +124,15 @@ public class Schematic extends Canvas {
 				} else {
 					main.scene.setCursor(Cursor.DEFAULT);
 				}
-			}
-			if(event.getButton() == MouseButton.PRIMARY && selectedComponent != null) {
+			}else if(event.getButton() == MouseButton.PRIMARY && selectedComponent != null && main.selectedItem == "~SELECT") {
 				refresh();
+			}else if(event.getButton() == MouseButton.PRIMARY && main.selectedItem == "~WIRE") {
+				createWire();
 			}
 		});
 		
 		main.scene.setOnKeyPressed(event -> {
 			if(event.getCode() == KeyCode.R && selectedComponent != null) {
-				//TODO: rotate clockwise
 				selectedComponent.rotate();
 				refresh();
 			}
@@ -164,12 +181,15 @@ public class Schematic extends Canvas {
 		createGridLines();
 
 		for (Component comp : components) {
-			//gc.drawImage(comp.image, (comp.xPos - (comp.xPos % 10)), (comp.yPos - (comp.yPos % 10)));
 			comp.drawComponent(gc);
 			
 			if (comp.selected == true) {
 				selectComponent(comp);
 			}
+		}
+		
+		for(Wire wire : wires) {
+			wire.drawWire(gc);
 		}
 	}
 
@@ -177,37 +197,69 @@ public class Schematic extends Canvas {
 		switch (selectedItem) {
 		case "AND":
 			components.add(new AndGate((event.getX() - (event.getX() % 10)), (event.getY() - (event.getY() % 10)),
-					0, 2));
+					0, this, 2));
 			break;
 		case "OR":
 			components.add(
-					new OrGate((event.getX() - (event.getX() % 10)), (event.getY() - (event.getY() % 10)), 0, 2));
+					new OrGate((event.getX() - (event.getX() % 10)), (event.getY() - (event.getY() % 10)), 0, this, 2));
 			break;
 		case "NAND":
 			components.add(new NandGate((event.getX() - (event.getX() % 10)), (event.getY() - (event.getY() % 10)),
-					0, 2));
+					0, this, 2));
 			break;
 		case "NOR":
 			components.add(new NorGate((event.getX() - (event.getX() % 10)), (event.getY() - (event.getY() % 10)),
-					0, 2));
+					0, this, 2));
 			break;
 		default:
 			System.err.println("This is not a valid component ID");
 		}
 
-		Image image = new Image("Images/" + selectedItem + ".png", 60, 40, false, false);
-		gc.drawImage(image, (event.getX() - (event.getX() % 10)), (event.getY() - (event.getY() % 10)));
+		refresh();
 	}
-
+	
 	public void selectComponent(Component comp) {
+		
 		if(comp.rotation == 0 || comp.rotation == 2) {
-			gc.setStroke(Color.WHITE);
-			gc.strokeRect((comp.xPos - (comp.xPos % 10)), (comp.yPos - (comp.yPos % 10)), comp.width, comp.height);
 			selectedComponent = comp;
 		}else {
-			gc.setStroke(Color.WHITE);
-			gc.strokeRect((comp.xPos - (comp.xPos % 10)), (comp.yPos - (comp.yPos % 10)), comp.height, comp.width);
 			selectedComponent = comp;
 		}
+		
+	}
+	
+	public void createWire() {
+		//TODO: improve this to make it easier to use
+		Wire tempWire = new Wire();
+		
+		double tempStartX = wireStartX - (wireStartX % 10);
+		double tempStartY = wireStartY - (wireStartY % 10);
+		
+		double tempEndX = wireEndX - (wireEndX % 10);
+		double tempEndY = wireEndY - (wireEndY % 10);
+		
+		Line line1 = new Line(tempStartX, tempStartY, tempEndX, tempStartY);
+		Line line2 = new Line(tempEndX, tempStartY, tempEndX, tempEndY);
+		
+		tempWire.addLine(line1);
+		tempWire.addLine(line2);
+		
+		wires.add(tempWire);
+	}
+	
+	public void renderCurrentWire() {
+		refresh();
+		
+		gc.setStroke(Color.RED);
+		gc.setLineWidth(1);
+		
+		double tempStartX = wireStartX - (wireStartX % 10);
+		double tempStartY = wireStartY - (wireStartY % 10);
+		
+		double tempEndX = wireEndX - (wireEndX % 10);
+		double tempEndY = wireEndY - (wireEndY % 10);
+		
+		gc.strokeLine(tempStartX, tempStartY, tempEndX, tempStartY);
+		gc.strokeLine(tempEndX, tempStartY, tempEndX, tempEndY);
 	}
 }

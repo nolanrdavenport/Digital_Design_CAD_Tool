@@ -203,7 +203,7 @@ public class Main extends Application {
 	}
 
 	public void setupComponentTab(GridPane grid) {
-		Image andImage = new Image("Images/AND_image.png", 60, 40, false, false);
+		Image andImage = new Image("Images/AND/AND_image.png", 60, 40, false, false);
 		Button andButton = new Button();
 		andButton.setOnAction(e -> {
 			selectedItem = "AND";
@@ -212,7 +212,7 @@ public class Main extends Application {
 		andButton.setGraphic(new ImageView(andImage));
 		grid.add(andButton, 0, 0, 1, 1);
 
-		Image orImage = new Image("Images/OR_image.png", 60, 40, false, false);
+		Image orImage = new Image("Images/OR/OR_image.png", 60, 40, false, false);
 		Button orButton = new Button();
 		orButton.setOnAction(e -> {
 			selectedItem = "OR";
@@ -221,7 +221,7 @@ public class Main extends Application {
 		orButton.setGraphic(new ImageView(orImage));
 		grid.add(orButton, 1, 0, 1, 1);
 		
-		Image nandImage = new Image("Images/NAND_image.png", 60, 40, false, false);
+		Image nandImage = new Image("Images/NAND/NAND_image.png", 60, 40, false, false);
 		Button nandButton = new Button();
 		nandButton.setOnAction(e -> {
 			selectedItem = "NAND";
@@ -230,7 +230,7 @@ public class Main extends Application {
 		nandButton.setGraphic(new ImageView(nandImage));
 		grid.add(nandButton, 0, 1, 1, 1);
 
-		Image norImage = new Image("Images/NOR_image.png", 60, 40, false, false);
+		Image norImage = new Image("Images/NOR/NOR_image.png", 60, 40, false, false);
 		Button norButton = new Button();
 		norButton.setOnAction(e -> {
 			selectedItem = "NOR";
