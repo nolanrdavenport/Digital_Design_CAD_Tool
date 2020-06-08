@@ -66,7 +66,7 @@ public class Main extends Application {
 			@Override
 			public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
 				if (newValue) {
-					splitPane.setDividerPositions(0.1);
+					splitPane.setDividerPositions(0.15);
 					splitPane.setPrefHeight(primaryStage.getHeight());
 					observable.removeListener(this);
 				}
@@ -88,7 +88,9 @@ public class Main extends Application {
 			@Override
 			public void changed(ObservableValue<? extends Number> observableValue, Number oldSceneWidth,
 					Number newSceneWidth) {
-				splitPane.setDividerPositions(0.1);
+				splitPane.setDividerPositions(0.15);
+				splitPane.setPrefWidth(primaryStage.getWidth());
+				tabPane.setPrefWidth(primaryStage.getWidth());
 			}
 		});
 
