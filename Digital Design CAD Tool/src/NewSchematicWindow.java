@@ -19,9 +19,9 @@ public class NewSchematicWindow extends Stage {
 
 		Label sizeLabel = new Label("Size of the Schematic");
 		Label sizeLabelWidth = new Label("Width");
-		TextField sizeFieldWidth = new TextField("1000");
+		TextField sizeFieldWidth = new TextField("2000");
 		Label sizeLabelHeight = new Label("Height");
-		TextField sizeFieldHeight = new TextField("1000");
+		TextField sizeFieldHeight = new TextField("2000");
 		
 		HBox buttons = new HBox();
 		Button createButton = new Button("Create");

@@ -12,7 +12,7 @@ public class NorGate extends Component{
 		this.numInputs = numInputs;
 		this.id = "NOR";
 		for(int i = 0; i < this.images.length; i++) {
-			images[i] = new Image("Images/NOR/NOR_"+i+".png");
+			images[i] = new Image("Images/NOR/NOR_"+i+".png",120,120,true,false);
 		}
 		this.currImage = images[0];
 	}

@@ -12,7 +12,7 @@ public class OrGate extends Component{
 		this.numInputs = numInputs;
 		this.id = "OR";
 		for(int i = 0; i < this.images.length; i++) {
-			images[i] = new Image("Images/OR/OR_"+i+".png");
+			images[i] = new Image("Images/OR/OR_"+i+".png",120,120,true,false);
 		}
 		this.currImage = images[0];
 	}

@@ -157,6 +157,7 @@ public class Main extends Application {
 		Menu editMenu = new Menu("Edit");
 		MenuItem zoomInItem = new MenuItem("Zoom In");
 		MenuItem zoomOutItem = new MenuItem("Zoom Out");
+		MenuItem clearSchematicItem = new MenuItem("Clear Schematic");
 		editMenu.getItems().add(zoomInItem);
 		zoomInItem.setOnAction(e -> {
 			for(Schematic sch : schematics) {
@@ -171,6 +172,13 @@ public class Main extends Application {
 			}
 		});
 		zoomOutItem.setAccelerator(new KeyCodeCombination(KeyCode.MINUS, KeyCombination.CONTROL_DOWN));
+		clearSchematicItem.setOnAction(e -> {
+			//TODO: Make it only clear selected schematic
+			for(Schematic sch : schematics) {
+				sch.clear();
+			}
+		});
+		editMenu.getItems().add(clearSchematicItem);
 
 		// Project Menu
 		Menu projectMenu = new Menu("Project");
@@ -284,10 +292,8 @@ public class Main extends Application {
 	 * This method creates a new schematic and adds it to the tab pane.
 	 */
 	public void createSchematic(String name, int width, int height) {
-		ScrollPane sPane = new ScrollPane();
 		Schematic schematic = new Schematic(this, tabPane, width, height);
-		sPane.setContent(schematic);
-		Tab newSchematic = new Tab(name, sPane);
+		Tab newSchematic = new Tab(name, schematic);
 		tabPane.getTabs().add(newSchematic);
 		tabPane.getSelectionModel().select(newSchematic);
 		

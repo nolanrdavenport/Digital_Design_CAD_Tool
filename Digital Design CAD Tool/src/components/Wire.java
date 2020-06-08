@@ -27,10 +27,10 @@ public class Wire {
 	
 	public void drawWire(GraphicsContext gc) {
 		for(Line line : lines) {
-			gc.setStroke(Color.RED);
-			gc.setLineWidth(1);
+			gc.setStroke(Color.WHITE);
+			gc.setLineWidth(2);
 			
-			gc.strokeLine(line.x1, line.y1, line.x2, line.y2);
+			gc.strokeLine(line.x1, line.y1 - 1, line.x2, line.y2 - 1);
 		}
 	}
 }

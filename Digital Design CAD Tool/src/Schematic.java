@@ -5,12 +5,10 @@ import javafx.scene.Cursor;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.TabPane;
-import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
-import javafx.scene.transform.Rotate;
 
 public class Schematic extends Canvas {
 	public int width, height;
@@ -50,6 +48,7 @@ public class Schematic extends Canvas {
 		this.main = main;
 		GraphicsContext gc = this.getGraphicsContext2D();
 		this.gc = gc;
+		gc.setImageSmoothing(false);
 		wireDirectionFound = false;
 
 		gc.fillRect(0, 0, width, height);
@@ -137,7 +136,7 @@ public class Schematic extends Canvas {
 			} else if (event.getButton() == MouseButton.PRIMARY && selectedComponent != null
 					&& main.selectedItem == "~SELECT") {
 				refresh();
-			} else if (event.getButton() == MouseButton.PRIMARY && main.selectedItem == "~WIRE") {
+			} else if (event.getButton() == MouseButton.PRIMARY && main.selectedItem == "~WIRE" && wireDirectionFound) {
 				createWire();
 				wireDirectionFound = false;
 			}
@@ -150,6 +149,16 @@ public class Schematic extends Canvas {
 			}
 		});
 		createGridLines();
+		
+		
+		// Give scroll functionality to scrollwheel - because why not?
+		this.setOnScroll(event -> {
+			if(event.getDeltaY() < 0) {
+				zoom(1);
+			}else {
+				zoom(0);
+			}
+		});
 
 	}
 
@@ -185,13 +194,18 @@ public class Schematic extends Canvas {
 		}
 
 	}
+	
+	public void clear() {
+		wires = new ArrayList<Wire>();
+		components = new ArrayList<Component>();
+		refresh();
+	}
 
 	public void refresh() {
 		gc.clearRect(0, 0, width, height);
 		gc.setFill(Color.BLACK);
 		gc.fillRect(0, 0, width, height);
 		createGridLines();
-
 		for (Component comp : components) {
 			comp.drawComponent(gc);
 
@@ -243,12 +257,19 @@ public class Schematic extends Canvas {
 	public void createWire() {
 		// TODO: improve this to make it easier to use
 		Wire tempWire = new Wire();
-
+		
+		/*
 		double tempStartX = wireStartX - (wireStartX % 10);
 		double tempStartY = wireStartY - (wireStartY % 10);
 
 		double tempEndX = wireEndX - (wireEndX % 10);
 		double tempEndY = wireEndY - (wireEndY % 10);
+		*/
+		
+		double tempStartX = Math.round((float)wireStartX / 10) * 10;
+		double tempStartY = Math.round((float)wireStartY / 10) * 10;
+		double tempEndX = Math.round((float)wireEndX / 10) * 10;
+		double tempEndY = Math.round((float)wireEndY / 10) * 10;
 		
 		if(wireDirection == 0) {
 			Line line1 = new Line(tempStartX, tempStartY, tempEndX, tempStartY);
@@ -265,19 +286,19 @@ public class Schematic extends Canvas {
 		}
 
 		wires.add(tempWire);
+		refresh();
 	}
 
 	public void renderCurrentWire() {
 		refresh();
 
 		gc.setStroke(Color.RED);
-		gc.setLineWidth(1);
+		gc.setLineWidth(2);
 		
-		double tempStartX = wireStartX - (wireStartX % 10);
-		double tempStartY = wireStartY - (wireStartY % 10);
-
-		double tempEndX = wireEndX - (wireEndX % 10);
-		double tempEndY = wireEndY - (wireEndY % 10);
+		double tempStartX = Math.round((float)wireStartX / 10) * 10;
+		double tempStartY = (Math.round((float)wireStartY / 10) * 10) - 1;
+		double tempEndX = Math.round((float)wireEndX / 10) * 10;
+		double tempEndY = (Math.round((float)wireEndY / 10) * 10) - 1;
 
 		if (wireDirection == 0) {
 			gc.strokeLine(tempStartX, tempStartY, tempEndX, tempStartY);
@@ -286,5 +307,15 @@ public class Schematic extends Canvas {
 			gc.strokeLine(tempStartX, tempStartY, tempStartX, tempEndY);
 			gc.strokeLine(tempStartX, tempEndY, tempEndX, tempEndY);
 		}
+	}
+	
+	public void cleanUpWires() {
+		/*
+		 * TODO: Figure this shit out
+		 * specifications:
+		 * 1. 2 "Wire" instances that could be simplified into 1, should be.
+		 * 2. Any connected wires should be merged. 
+		 * 3. idk how to do this but we shall figure it out soon enough lol.
+		 */
 	}
 }
