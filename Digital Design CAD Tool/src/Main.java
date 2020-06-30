@@ -155,9 +155,19 @@ public class Main extends Application {
 
 		// Edit Menu
 		Menu editMenu = new Menu("Edit");
+		MenuItem undoItem = new MenuItem("Undo");
+		MenuItem redoItem = new MenuItem("Redo");
 		MenuItem zoomInItem = new MenuItem("Zoom In");
 		MenuItem zoomOutItem = new MenuItem("Zoom Out");
 		MenuItem clearSchematicItem = new MenuItem("Clear Schematic");
+		editMenu.getItems().add(undoItem);
+		undoItem.setOnAction(e -> {
+			for(Schematic sch : schematics) {
+				sch.undo();
+			}
+		});
+		undoItem.setAccelerator(new KeyCodeCombination(KeyCode.Z, KeyCombination.CONTROL_DOWN));
+		
 		editMenu.getItems().add(zoomInItem);
 		zoomInItem.setOnAction(e -> {
 			for(Schematic sch : schematics) {
@@ -248,6 +258,15 @@ public class Main extends Application {
 		});
 		norButton.setGraphic(new ImageView(norImage));
 		grid.add(norButton, 1, 1, 1, 1);
+		
+		Image notImage = new Image("Images/NOT/NOT_image.png", 60, 40, false, false);
+		Button notButton = new Button();
+		notButton.setOnAction(e -> {
+			selectedItem = "NOT";
+			scene.setCursor(Cursor.CROSSHAIR);
+		});
+		notButton.setGraphic(new ImageView(notImage));
+		grid.add(notButton, 0, 2, 1, 1);
 		
 		ScrollPane componentScrollPane = new ScrollPane(grid);
 		Tab componentTab = new Tab("Components", componentScrollPane);

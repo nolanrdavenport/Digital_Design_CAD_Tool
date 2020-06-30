@@ -1,4 +1,6 @@
 import java.util.ArrayList;
+import java.util.Deque;
+import java.util.LinkedList;
 
 import components.*;
 import javafx.scene.Cursor;
@@ -33,15 +35,23 @@ public class Schematic extends Canvas {
 	private boolean wireDirectionFound;
 	int wireDirection = 0; // "0" for left/right, and "1" for up/down
 
+	// For storing and manipulating schematic states
 	public ArrayList<Component> components;
 	public ArrayList<Wire> wires;
+	public Deque<SchematicState> pastStates;
+	public Deque<SchematicState> futureStates;
+	public boolean justDragged = false;
 
 	Component selectedComponent = null;
 
+	@SuppressWarnings("unchecked")
 	public Schematic(Main main, TabPane tabPane, int width, int height) {
 		super(width, height);
+		pastStates = new LinkedList<SchematicState>();
+		futureStates = new LinkedList<SchematicState>();
 		components = new ArrayList<Component>();
 		wires = new ArrayList<Wire>();
+		pastStates.addFirst(new SchematicState((ArrayList<Component>) components.clone(), (ArrayList<Wire>) wires.clone()));
 		this.tabPane = tabPane;
 		this.height = height;
 		this.width = width;
@@ -78,7 +88,7 @@ public class Schematic extends Canvas {
 					}
 					selectedComponent = null;
 				}
-				refresh();
+				refresh(false);
 			}
 		});
 
@@ -108,8 +118,9 @@ public class Schematic extends Canvas {
 
 				compMouseX = event.getX();
 				compMouseY = event.getY();
-
-				refresh();
+				
+				justDragged = true;
+				refresh(false);
 			} else if (event.getButton() == MouseButton.PRIMARY && main.selectedItem == "~WIRE") {
 				wireEndX = event.getX();
 				wireEndY = event.getY();
@@ -135,7 +146,10 @@ public class Schematic extends Canvas {
 				}
 			} else if (event.getButton() == MouseButton.PRIMARY && selectedComponent != null
 					&& main.selectedItem == "~SELECT") {
-				refresh();
+				if(justDragged) {
+					refresh(true);
+					justDragged = false;
+				}
 			} else if (event.getButton() == MouseButton.PRIMARY && main.selectedItem == "~WIRE" && wireDirectionFound) {
 				createWire();
 				wireDirectionFound = false;
@@ -145,7 +159,10 @@ public class Schematic extends Canvas {
 		main.scene.setOnKeyPressed(event -> {
 			if (event.getCode() == KeyCode.R && selectedComponent != null) {
 				selectedComponent.rotate();
-				refresh();
+				refresh(true);
+			}else if(event.getCode() == KeyCode.DELETE && selectedComponent != null) {
+				components.remove(selectedComponent);
+				refresh(true);
 			}
 		});
 		createGridLines();
@@ -165,7 +182,6 @@ public class Schematic extends Canvas {
 	public void middleMouseDragged(MouseEvent event) {
 		double deltaX = event.getScreenX() - mouseX;
 		double deltaY = event.getScreenY() - mouseY;
-		// this.relocate(getLayoutX() + deltaX, getLayoutY() + deltaY);
 		this.setTranslateX(this.getTranslateX() + deltaX);
 		this.setTranslateY(this.getTranslateY() + deltaY);
 		mouseX = event.getScreenX();
@@ -198,14 +214,22 @@ public class Schematic extends Canvas {
 	public void clear() {
 		wires = new ArrayList<Wire>();
 		components = new ArrayList<Component>();
-		refresh();
+		refresh(true);
 	}
 
-	public void refresh() {
+	@SuppressWarnings("unchecked")
+	public void refresh(boolean saveSchematicState) {
+		if(saveSchematicState) {
+			pastStates.addFirst(new SchematicState((ArrayList<Component>) components.clone(), (ArrayList<Wire>) wires.clone()));
+			System.out.println("Past state added " + pastStates.size());
+		}
+		
 		gc.clearRect(0, 0, width, height);
 		gc.setFill(Color.BLACK);
 		gc.fillRect(0, 0, width, height);
 		createGridLines();
+		
+		
 		for (Component comp : components) {
 			comp.drawComponent(gc);
 
@@ -217,6 +241,8 @@ public class Schematic extends Canvas {
 		for (Wire wire : wires) {
 			wire.drawWire(gc);
 		}
+		
+		
 	}
 
 	public void placeItem(String selectedItem, MouseEvent event) {
@@ -237,11 +263,15 @@ public class Schematic extends Canvas {
 			components.add(new NorGate((event.getX() - (event.getX() % 10)), (event.getY() - (event.getY() % 10)), 0,
 					this, 2));
 			break;
+		case "NOT":
+			components.add(new NotGate((event.getX() - (event.getX() % 10)), (event.getY() - (event.getY() % 10)), 0,
+					this, 2));
+			break;
 		default:
-			System.err.println("This is not a valid component ID");
+			System.err.println("This is not a valid component ID: " + selectedItem);
 		}
 
-		refresh();
+		refresh(true);
 	}
 
 	public void selectComponent(Component comp) {
@@ -286,11 +316,11 @@ public class Schematic extends Canvas {
 		}
 
 		wires.add(tempWire);
-		refresh();
+		refresh(true);
 	}
 
 	public void renderCurrentWire() {
-		refresh();
+		refresh(false);
 
 		gc.setStroke(Color.RED);
 		gc.setLineWidth(2);
@@ -307,6 +337,43 @@ public class Schematic extends Canvas {
 			gc.strokeLine(tempStartX, tempStartY, tempStartX, tempEndY);
 			gc.strokeLine(tempStartX, tempEndY, tempEndX, tempEndY);
 		}
+	}
+	
+	//TODO: make these methods
+	@SuppressWarnings("unchecked")
+	public void undo() {
+		if(pastStates.size() > 1) {
+			futureStates.addFirst(pastStates.pop());
+			System.out.println("undo called and the new pastStates size is " + pastStates.size());
+			System.out.println("the new futureStates size is " + futureStates.size());
+			if(futureStates.size() > 20) {
+				futureStates.removeLast();
+			}
+			components = new ArrayList<Component>();
+			wires = new ArrayList<Wire>();
+			for(Component comp : pastStates.peek().getComponents()) {
+				components.add(comp);
+			}
+			for(Wire wire : pastStates.peek().getWires()) {
+				wires.add(wire);
+			}
+		}else {
+			System.err.println("There are no past states! " + pastStates.size());
+		}
+		refresh(false);
+	}
+	public void redo() {
+		if(futureStates.size() > 0) {
+			pastStates.addFirst(futureStates.pop());
+			if(pastStates.size() > 20) {
+				pastStates.removeLast();
+			}
+			components = pastStates.getFirst().getComponents();
+			wires = pastStates.getFirst().getWires();
+		}else {
+			System.err.println("There are no future states!");
+		}
+		refresh(false);
 	}
 	
 	public void cleanUpWires() {
