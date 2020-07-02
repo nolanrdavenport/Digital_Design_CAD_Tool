@@ -38,8 +38,6 @@ public class Schematic extends Canvas {
 	// For storing and manipulating schematic states
 	public ArrayList<Component> components;
 	public ArrayList<Wire> wires;
-	public Deque<SchematicState> pastStates;
-	public Deque<SchematicState> futureStates;
 	public boolean justDragged = false;
 
 	Component selectedComponent = null;
@@ -47,11 +45,8 @@ public class Schematic extends Canvas {
 	@SuppressWarnings("unchecked")
 	public Schematic(Main main, TabPane tabPane, int width, int height) {
 		super(width, height);
-		pastStates = new LinkedList<SchematicState>();
-		futureStates = new LinkedList<SchematicState>();
 		components = new ArrayList<Component>();
 		wires = new ArrayList<Wire>();
-		pastStates.addFirst(new SchematicState((ArrayList<Component>) components.clone(), (ArrayList<Wire>) wires.clone()));
 		this.tabPane = tabPane;
 		this.height = height;
 		this.width = width;
@@ -220,8 +215,7 @@ public class Schematic extends Canvas {
 	@SuppressWarnings("unchecked")
 	public void refresh(boolean saveSchematicState) {
 		if(saveSchematicState) {
-			pastStates.addFirst(new SchematicState((ArrayList<Component>) components.clone(), (ArrayList<Wire>) wires.clone()));
-			System.out.println("Past state added " + pastStates.size());
+			// TODO: figure this shit out
 		}
 		
 		gc.clearRect(0, 0, width, height);
@@ -342,38 +336,10 @@ public class Schematic extends Canvas {
 	//TODO: make these methods
 	@SuppressWarnings("unchecked")
 	public void undo() {
-		if(pastStates.size() > 1) {
-			futureStates.addFirst(pastStates.pop());
-			System.out.println("undo called and the new pastStates size is " + pastStates.size());
-			System.out.println("the new futureStates size is " + futureStates.size());
-			if(futureStates.size() > 20) {
-				futureStates.removeLast();
-			}
-			components = new ArrayList<Component>();
-			wires = new ArrayList<Wire>();
-			for(Component comp : pastStates.peek().getComponents()) {
-				components.add(comp);
-			}
-			for(Wire wire : pastStates.peek().getWires()) {
-				wires.add(wire);
-			}
-		}else {
-			System.err.println("There are no past states! " + pastStates.size());
-		}
-		refresh(false);
+		// TODO: Figure it out
 	}
 	public void redo() {
-		if(futureStates.size() > 0) {
-			pastStates.addFirst(futureStates.pop());
-			if(pastStates.size() > 20) {
-				pastStates.removeLast();
-			}
-			components = pastStates.getFirst().getComponents();
-			wires = pastStates.getFirst().getWires();
-		}else {
-			System.err.println("There are no future states!");
-		}
-		refresh(false);
+		// TODO: Figure it out
 	}
 	
 	public void cleanUpWires() {
