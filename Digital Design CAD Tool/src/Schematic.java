@@ -39,7 +39,7 @@ public class Schematic extends Canvas {
 	public SchematicState currState;
 	public boolean justDragged = false;
 	public Deque<SchematicState> pastStates;
-	public int maxPastStatesSize = 5;
+	public int maxPastStatesSize = 100;
 	public Deque<SchematicState> futureStates;
 	public SchematicState lastState;
 
@@ -226,7 +226,6 @@ public class Schematic extends Canvas {
 				pastStates.removeLast();
 			}
 			lastState = new SchematicState(currState);
-			System.out.println("past states size: " + pastStates.size());
 		}
 
 		gc.clearRect(0, 0, width, height);
@@ -350,12 +349,13 @@ public class Schematic extends Canvas {
 			currState = new SchematicState(pastStates.removeFirst());
 		}else {
 			pastStates.clear();
+			lastState = new SchematicState(currState);
 		}
 		refresh(false);
 	}
 
 	public void redo() {
-		// TODO: Figure it out
+		// TODO: Implement this in the future, but not now. It's not that important right now to create a functional program.
 	}
 
 	public void cleanUpWires() {

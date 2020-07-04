@@ -167,6 +167,7 @@ public class Main extends Application {
 			}
 		});
 		
+		editMenu.getItems().add(redoItem);
 		redoItem.setOnAction(e -> {
 			for(Schematic sch : schematics) {
 				sch.redo();
