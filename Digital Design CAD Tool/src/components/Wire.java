@@ -5,12 +5,16 @@ import java.util.ArrayList;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 
-public class Wire {
+public class Wire implements Cloneable{
 	
 	public ArrayList<Line> lines;
 	
 	public Wire() {
 		lines = new ArrayList<Line>();
+	}
+	
+	public Object clone()throws CloneNotSupportedException{  
+		return (Wire)super.clone();  
 	}
 	
 	public void addLine(Line line) {

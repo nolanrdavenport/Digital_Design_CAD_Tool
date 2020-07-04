@@ -3,11 +3,9 @@ package components;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.paint.Color;
-import javafx.scene.transform.Rotate;
 
-public abstract class Component {
+public abstract class Component implements Cloneable{
 	public double xPos, yPos;
 	public int rotation; // options: "right = 0", "down = 1", "left = 2", "up = 3"
 	public String id;
@@ -22,6 +20,10 @@ public abstract class Component {
 		this.rotation = rotation;
 		this.selected = false;
 		this.canvas = canvas;
+	}
+	
+	public Object clone()throws CloneNotSupportedException{  
+		return (Component)super.clone();  
 	}
 
 	public boolean insideBounds(double mouseX, double mouseY) {

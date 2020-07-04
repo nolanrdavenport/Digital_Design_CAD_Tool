@@ -166,6 +166,12 @@ public class Main extends Application {
 				sch.undo();
 			}
 		});
+		
+		redoItem.setOnAction(e -> {
+			for(Schematic sch : schematics) {
+				sch.redo();
+			}
+		});
 		undoItem.setAccelerator(new KeyCodeCombination(KeyCode.Z, KeyCombination.CONTROL_DOWN));
 		
 		editMenu.getItems().add(zoomInItem);
@@ -185,7 +191,7 @@ public class Main extends Application {
 		clearSchematicItem.setOnAction(e -> {
 			//TODO: Make it only clear selected schematic
 			for(Schematic sch : schematics) {
-				sch.clear();
+				sch.clear(true);
 			}
 		});
 		editMenu.getItems().add(clearSchematicItem);

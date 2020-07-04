@@ -36,17 +36,23 @@ public class Schematic extends Canvas {
 	int wireDirection = 0; // "0" for left/right, and "1" for up/down
 
 	// For storing and manipulating schematic states
-	public ArrayList<Component> components;
-	public ArrayList<Wire> wires;
+	public SchematicState currState;
 	public boolean justDragged = false;
+	public Deque<SchematicState> pastStates;
+	public int maxPastStatesSize = 5;
+	public Deque<SchematicState> futureStates;
+	public SchematicState lastState;
 
 	Component selectedComponent = null;
 
-	@SuppressWarnings("unchecked")
 	public Schematic(Main main, TabPane tabPane, int width, int height) {
 		super(width, height);
-		components = new ArrayList<Component>();
-		wires = new ArrayList<Wire>();
+		// components = new ArrayList<Component>();
+		// wires = new ArrayList<Wire>();
+		currState = new SchematicState();
+		pastStates = new LinkedList<SchematicState>();
+		futureStates = new LinkedList<SchematicState>();
+		lastState = new SchematicState(currState);
 		this.tabPane = tabPane;
 		this.height = height;
 		this.width = width;
@@ -65,10 +71,10 @@ public class Schematic extends Canvas {
 				placeItem(main.selectedItem, event);
 			} else if (event.getButton() == MouseButton.PRIMARY && main.selectedItem == "~SELECT") {
 				boolean selectedAnItem = false;
-				for (Component comp : components) {
+				for (Component comp : currState.components) {
 					comp.selected = false;
 				}
-				for (Component comp : components) {
+				for (Component comp : currState.components) {
 					if (!comp.selected && comp.insideBounds(event.getX(), event.getY())) {
 						selectComponent(comp);
 						selectedAnItem = true;
@@ -77,7 +83,7 @@ public class Schematic extends Canvas {
 				}
 				// If no item is selected, unselect the previously selected item
 				if (!selectedAnItem) {
-					for (Component comp : components) {
+					for (Component comp : currState.components) {
 						comp.square();
 						comp.selected = false;
 					}
@@ -113,7 +119,7 @@ public class Schematic extends Canvas {
 
 				compMouseX = event.getX();
 				compMouseY = event.getY();
-				
+
 				justDragged = true;
 				refresh(false);
 			} else if (event.getButton() == MouseButton.PRIMARY && main.selectedItem == "~WIRE") {
@@ -141,7 +147,7 @@ public class Schematic extends Canvas {
 				}
 			} else if (event.getButton() == MouseButton.PRIMARY && selectedComponent != null
 					&& main.selectedItem == "~SELECT") {
-				if(justDragged) {
+				if (justDragged) {
 					refresh(true);
 					justDragged = false;
 				}
@@ -155,22 +161,23 @@ public class Schematic extends Canvas {
 			if (event.getCode() == KeyCode.R && selectedComponent != null) {
 				selectedComponent.rotate();
 				refresh(true);
-			}else if(event.getCode() == KeyCode.DELETE && selectedComponent != null) {
-				components.remove(selectedComponent);
+			} else if (event.getCode() == KeyCode.DELETE && selectedComponent != null) {
+				currState.components.remove(selectedComponent);
 				refresh(true);
 			}
 		});
 		createGridLines();
-		
-		
+
 		// Give scroll functionality to scrollwheel - because why not?
 		this.setOnScroll(event -> {
-			if(event.getDeltaY() < 0) {
+			if (event.getDeltaY() < 0) {
 				zoom(1);
-			}else {
+			} else {
 				zoom(0);
 			}
 		});
+
+		refresh(true);
 
 	}
 
@@ -205,26 +212,29 @@ public class Schematic extends Canvas {
 		}
 
 	}
-	
-	public void clear() {
-		wires = new ArrayList<Wire>();
-		components = new ArrayList<Component>();
-		refresh(true);
+
+	public void clear(boolean saveSchematicState) {
+		currState.wires = new ArrayList<Wire>();
+		currState.components = new ArrayList<Component>();
+		refresh(saveSchematicState);
 	}
 
-	@SuppressWarnings("unchecked")
 	public void refresh(boolean saveSchematicState) {
-		if(saveSchematicState) {
-			// TODO: figure this shit out
+		if (saveSchematicState) {
+			pastStates.addFirst(new SchematicState(lastState));
+			if (pastStates.size() > maxPastStatesSize) {
+				pastStates.removeLast();
+			}
+			lastState = new SchematicState(currState);
+			System.out.println("past states size: " + pastStates.size());
 		}
-		
+
 		gc.clearRect(0, 0, width, height);
 		gc.setFill(Color.BLACK);
 		gc.fillRect(0, 0, width, height);
 		createGridLines();
-		
-		
-		for (Component comp : components) {
+
+		for (Component comp : currState.components) {
 			comp.drawComponent(gc);
 
 			if (comp.selected == true) {
@@ -232,34 +242,33 @@ public class Schematic extends Canvas {
 			}
 		}
 
-		for (Wire wire : wires) {
+		for (Wire wire : currState.wires) {
 			wire.drawWire(gc);
 		}
-		
-		
+
 	}
 
 	public void placeItem(String selectedItem, MouseEvent event) {
 		switch (selectedItem) {
 		case "AND":
-			components.add(new AndGate((event.getX() - (event.getX() % 10)), (event.getY() - (event.getY() % 10)), 0,
-					this, 2));
+			currState.components.add(new AndGate((event.getX() - (event.getX() % 10)),
+					(event.getY() - (event.getY() % 10)), 0, this, 2));
 			break;
 		case "OR":
-			components.add(
+			currState.components.add(
 					new OrGate((event.getX() - (event.getX() % 10)), (event.getY() - (event.getY() % 10)), 0, this, 2));
 			break;
 		case "NAND":
-			components.add(new NandGate((event.getX() - (event.getX() % 10)), (event.getY() - (event.getY() % 10)), 0,
-					this, 2));
+			currState.components.add(new NandGate((event.getX() - (event.getX() % 10)),
+					(event.getY() - (event.getY() % 10)), 0, this, 2));
 			break;
 		case "NOR":
-			components.add(new NorGate((event.getX() - (event.getX() % 10)), (event.getY() - (event.getY() % 10)), 0,
-					this, 2));
+			currState.components.add(new NorGate((event.getX() - (event.getX() % 10)),
+					(event.getY() - (event.getY() % 10)), 0, this, 2));
 			break;
 		case "NOT":
-			components.add(new NotGate((event.getX() - (event.getX() % 10)), (event.getY() - (event.getY() % 10)), 0,
-					this, 2));
+			currState.components.add(new NotGate((event.getX() - (event.getX() % 10)),
+					(event.getY() - (event.getY() % 10)), 0, this, 2));
 			break;
 		default:
 			System.err.println("This is not a valid component ID: " + selectedItem);
@@ -281,27 +290,27 @@ public class Schematic extends Canvas {
 	public void createWire() {
 		// TODO: improve this to make it easier to use
 		Wire tempWire = new Wire();
-		
-		/*
-		double tempStartX = wireStartX - (wireStartX % 10);
-		double tempStartY = wireStartY - (wireStartY % 10);
 
-		double tempEndX = wireEndX - (wireEndX % 10);
-		double tempEndY = wireEndY - (wireEndY % 10);
-		*/
-		
-		double tempStartX = Math.round((float)wireStartX / 10) * 10;
-		double tempStartY = Math.round((float)wireStartY / 10) * 10;
-		double tempEndX = Math.round((float)wireEndX / 10) * 10;
-		double tempEndY = Math.round((float)wireEndY / 10) * 10;
-		
-		if(wireDirection == 0) {
+		/*
+		 * double tempStartX = wireStartX - (wireStartX % 10); double tempStartY =
+		 * wireStartY - (wireStartY % 10);
+		 * 
+		 * double tempEndX = wireEndX - (wireEndX % 10); double tempEndY = wireEndY -
+		 * (wireEndY % 10);
+		 */
+
+		double tempStartX = Math.round((float) wireStartX / 10) * 10;
+		double tempStartY = Math.round((float) wireStartY / 10) * 10;
+		double tempEndX = Math.round((float) wireEndX / 10) * 10;
+		double tempEndY = Math.round((float) wireEndY / 10) * 10;
+
+		if (wireDirection == 0) {
 			Line line1 = new Line(tempStartX, tempStartY, tempEndX, tempStartY);
 			Line line2 = new Line(tempEndX, tempStartY, tempEndX, tempEndY);
 
 			tempWire.addLine(line1);
 			tempWire.addLine(line2);
-		}else {
+		} else {
 			Line line1 = new Line(tempStartX, tempStartY, tempStartX, tempEndY);
 			Line line2 = new Line(tempStartX, tempEndY, tempEndX, tempEndY);
 
@@ -309,7 +318,7 @@ public class Schematic extends Canvas {
 			tempWire.addLine(line2);
 		}
 
-		wires.add(tempWire);
+		currState.wires.add(tempWire);
 		refresh(true);
 	}
 
@@ -318,37 +327,42 @@ public class Schematic extends Canvas {
 
 		gc.setStroke(Color.RED);
 		gc.setLineWidth(2);
-		
-		double tempStartX = Math.round((float)wireStartX / 10) * 10;
-		double tempStartY = (Math.round((float)wireStartY / 10) * 10) - 1;
-		double tempEndX = Math.round((float)wireEndX / 10) * 10;
-		double tempEndY = (Math.round((float)wireEndY / 10) * 10) - 1;
+
+		double tempStartX = Math.round((float) wireStartX / 10) * 10;
+		double tempStartY = (Math.round((float) wireStartY / 10) * 10) - 1;
+		double tempEndX = Math.round((float) wireEndX / 10) * 10;
+		double tempEndY = (Math.round((float) wireEndY / 10) * 10) - 1;
 
 		if (wireDirection == 0) {
 			gc.strokeLine(tempStartX, tempStartY, tempEndX, tempStartY);
 			gc.strokeLine(tempEndX, tempStartY, tempEndX, tempEndY);
-		}else {
+		} else {
 			gc.strokeLine(tempStartX, tempStartY, tempStartX, tempEndY);
 			gc.strokeLine(tempStartX, tempEndY, tempEndX, tempEndY);
 		}
 	}
-	
-	//TODO: make these methods
-	@SuppressWarnings("unchecked")
+
+	// TODO: make these methods
 	public void undo() {
 		// TODO: Figure it out
+		if (pastStates.size() > 0) {
+			clear(false);
+			currState = new SchematicState(pastStates.removeFirst());
+		}else {
+			pastStates.clear();
+		}
+		refresh(false);
 	}
+
 	public void redo() {
 		// TODO: Figure it out
 	}
-	
+
 	public void cleanUpWires() {
 		/*
-		 * TODO: Figure this shit out
-		 * specifications:
-		 * 1. 2 "Wire" instances that could be simplified into 1, should be.
-		 * 2. Any connected wires should be merged. 
-		 * 3. idk how to do this but we shall figure it out soon enough lol.
+		 * TODO: Figure this shit out specifications: 1. 2 "Wire" instances that could
+		 * be simplified into 1, should be. 2. Any connected wires should be merged. 3.
+		 * idk how to do this but we shall figure it out soon enough lol.
 		 */
 	}
 }
