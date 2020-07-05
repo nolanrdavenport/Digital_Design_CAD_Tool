@@ -9,6 +9,9 @@ public class Wire implements Cloneable{
 	
 	public ArrayList<Line> lines;
 	
+	public Component valueDeterminingComponent;
+	public ArrayList<Component> connections;
+	
 	public Wire() {
 		lines = new ArrayList<Line>();
 	}
@@ -36,5 +39,9 @@ public class Wire implements Cloneable{
 			
 			gc.strokeLine(line.x1, line.y1 - 1, line.x2, line.y2 - 1);
 		}
+	}
+	
+	public void setValueDeterminingComponent(Component comp) {
+		valueDeterminingComponent = comp;
 	}
 }

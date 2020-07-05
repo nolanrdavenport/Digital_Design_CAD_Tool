@@ -277,13 +277,11 @@ public class Schematic extends Canvas {
 	}
 
 	public void selectComponent(Component comp) {
-
 		if (comp.rotation == 0 || comp.rotation == 2) {
 			selectedComponent = comp;
 		} else {
 			selectedComponent = comp;
 		}
-
 	}
 
 	public void createWire() {
