@@ -13,13 +13,22 @@ public abstract class Component implements Cloneable{
 	public Image currImage;
 	public boolean selected;
 	public Canvas canvas;
+	public int numInputs;
+	public boolean[] inputs;
+	public boolean output;
+	public int width, height;
 
-	public Component(double xPos, double yPos, int rotation, Canvas canvas) {
+	public Component(int width, int height, double xPos, double yPos, int rotation, Canvas canvas, int numInputs) {
+		this.width = width;
+		this.height = height;
 		this.xPos = xPos;
 		this.yPos = yPos;
 		this.rotation = rotation;
 		this.selected = false;
 		this.canvas = canvas;
+		this.numInputs = numInputs;
+		
+		inputs = new boolean[numInputs];
 	}
 	
 	public Object clone()throws CloneNotSupportedException{  

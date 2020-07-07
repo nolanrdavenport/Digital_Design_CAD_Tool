@@ -3,6 +3,7 @@ import java.util.Deque;
 import java.util.LinkedList;
 
 import components.*;
+import javafx.event.Event;
 import javafx.scene.Cursor;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -33,7 +34,11 @@ public class Schematic extends Canvas {
 	private double wireEndX;
 	private double wireEndY;
 	private boolean wireDirectionFound;
+	private boolean wireStarted;
 	int wireDirection = 0; // "0" for left/right, and "1" for up/down
+	int wireDetectionThreshold = 4;
+	private Wire wireToBeAddedTo = null;
+	private Component valueDetermingComponent = null;
 
 	// For storing and manipulating schematic states
 	public SchematicState currState;
@@ -61,6 +66,7 @@ public class Schematic extends Canvas {
 		this.gc = gc;
 		gc.setImageSmoothing(false);
 		wireDirectionFound = false;
+		wireStarted = false;
 
 		gc.fillRect(0, 0, width, height);
 
@@ -102,8 +108,97 @@ public class Schematic extends Canvas {
 				compMouseX = event.getX();
 				compMouseY = event.getY();
 			} else if (event.getButton() == MouseButton.PRIMARY && main.selectedItem == "~WIRE") {
-				wireStartX = event.getX();
-				wireStartY = event.getY();
+				deselectAllComponents();
+				for (Component comp : currState.components) {
+					// TODO: this will only work with the first orientation, so you have to make it
+					// work for all 4 orientations.
+					switch (comp.rotation) {
+					case 0:
+						for (int i = 20; i <= (comp.numInputs - 1) * 40 + 20; i += 40) {
+							if (Math.abs(event.getX() - comp.getX()) <= wireDetectionThreshold
+									&& Math.abs(event.getY() - (comp.getY() + i)) <= wireDetectionThreshold) {
+								startLine(event);
+								break;
+							} else if (Math
+									.abs(event.getX() - (comp.getX() + (2 * comp.width))) <= wireDetectionThreshold
+									&& Math.abs(event.getY() - (comp.getY() + comp.height)) <= wireDetectionThreshold) {
+								valueDetermingComponent = comp;
+								startLine(event);
+								break;
+							}
+						}
+						break;
+					case 1:
+						for (int i = 20; i <= (comp.numInputs - 1) * 40 + 20; i += 40) {
+							if (Math.abs(event.getX() - (comp.getX() + i)) <= wireDetectionThreshold
+									&& Math.abs(event.getY() - (comp.getY())) <= wireDetectionThreshold) {
+								startLine(event);
+								break;
+							} else if (Math.abs(event.getX() - (comp.getX() + comp.height)) <= wireDetectionThreshold
+									&& Math.abs(event.getY()
+											- (comp.getY() + (2 * comp.width))) <= wireDetectionThreshold) {
+								valueDetermingComponent = comp;
+								startLine(event);
+								break;
+							}
+						}
+					case 2:
+						for (int i = 20; i <= (comp.numInputs - 1) * 40 + 20; i += 40) {
+							if (Math.abs(event.getX() - (comp.getX() + (comp.width * 2))) <= wireDetectionThreshold
+									&& Math.abs(event.getY() - (comp.getY() + i)) <= wireDetectionThreshold) {
+								startLine(event);
+								break;
+							} else if (Math.abs(event.getX() - (comp.getX())) <= wireDetectionThreshold
+									&& Math.abs(event.getY() - (comp.getY() + comp.height)) <= wireDetectionThreshold) {
+								valueDetermingComponent = comp;
+								startLine(event);
+								break;
+							}
+						}
+						break;
+					case 3:
+						for (int i = 20; i <= (comp.numInputs - 1) * 40 + 20; i += 40) {
+							if (Math.abs(event.getX() - (comp.getX() + i)) <= wireDetectionThreshold && Math
+									.abs(event.getY() - (comp.getY() + (comp.width * 2))) <= wireDetectionThreshold) {
+								startLine(event);
+								break;
+							} else if (Math.abs(event.getX() - (comp.getX() + comp.height)) <= wireDetectionThreshold
+									&& Math.abs(event.getY() - (comp.getY())) <= wireDetectionThreshold) {
+								valueDetermingComponent = comp;
+								startLine(event);
+								break;
+							}
+						}
+						break;
+					}
+
+				}
+
+				// If the wire is to not be started from a component, and instead from another
+				// wire, we know the wire that we should add onto.
+				if (!wireStarted) {
+					for (Wire wire : currState.wires) {
+						for (Line line : wire.lines) {
+							if (Math.abs(event.getX() - line.x1) <= wireDetectionThreshold
+									&& Math.abs(event.getY() - line.y1) <= wireDetectionThreshold
+									&& line.beginningPointOpen) {
+								startLine(event);
+								wireToBeAddedTo = wire;
+								valueDetermingComponent = wireToBeAddedTo.valueDeterminingComponent;
+								break;
+							} else if (Math.abs(event.getX() - line.x2) <= wireDetectionThreshold
+									&& Math.abs(event.getY() - line.y2) <= wireDetectionThreshold
+									&& line.endingPointOpen) {
+								startLine(event);
+								wireToBeAddedTo = wire;
+								valueDetermingComponent = wireToBeAddedTo.valueDeterminingComponent;
+								break;
+							} else {
+								wireToBeAddedTo = null;
+							}
+						}
+					}
+				}
 			}
 		});
 
@@ -123,18 +218,21 @@ public class Schematic extends Canvas {
 				justDragged = true;
 				refresh(false);
 			} else if (event.getButton() == MouseButton.PRIMARY && main.selectedItem == "~WIRE") {
-				wireEndX = event.getX();
-				wireEndY = event.getY();
-				if (!wireDirectionFound) {
-					wireDirectionFound = true;
-					double diffX = Math.abs(wireEndX - wireStartX);
-					double diffY = Math.abs(wireEndY - wireStartY);
+				if (wireStarted) {
+					wireEndX = event.getX();
+					wireEndY = event.getY();
+					if (!wireDirectionFound) {
+						wireDirectionFound = true;
+						double diffX = Math.abs(wireEndX - wireStartX);
+						double diffY = Math.abs(wireEndY - wireStartY);
 
-					wireDirection = (diffX > diffY) ? 0 : 1;
-					renderCurrentWire();
-				} else {
-					renderCurrentWire();
+						wireDirection = (diffX > diffY) ? 0 : 1;
+						renderCurrentWire();
+					} else {
+						renderCurrentWire();
+					}
 				}
+
 			}
 		});
 
@@ -152,8 +250,49 @@ public class Schematic extends Canvas {
 					justDragged = false;
 				}
 			} else if (event.getButton() == MouseButton.PRIMARY && main.selectedItem == "~WIRE" && wireDirectionFound) {
-				createWire();
+				boolean endingPointClosed = false;
+				boolean endingPointOpen = false;
+				float temp1 = Math.round((float) wireEndX / 10) * 10 - 1;
+				float temp2 = Math.round((float) wireEndY / 10) * 10;
+				for (Wire wire : currState.wires) {
+					for (Line line : wire.lines) {
+						// for going into the middle of a line vertically
+						if (line.x1 == line.x2 && line.x1 == temp1
+								&& ((line.y1 < temp2 && line.y2 > temp2) || (line.y1 > temp2 && line.y2 < temp2))) {
+							endingPointClosed = true;
+							if(wireToBeAddedTo == null) {
+								wireToBeAddedTo = wire;
+							}else if(valueDetermingComponent != null && wireToBeAddedTo.valueDeterminingComponent != null) {
+								wireError(0);
+							}else if(valueDetermingComponent != null) {
+								
+							}
+							
+							break;
+						// for going into the middle of a line horizontally
+						}else if(line.y1 == line.y2 && line.y1 == temp2 && ((line.x1 < temp1 && line.x2 > temp1) || (line.x1 > temp1 && line.x2 < temp1))) {
+							endingPointClosed = true;
+							if(wireToBeAddedTo == null) {
+								wireToBeAddedTo = wire;
+							}else if(valueDetermingComponent != null && wireToBeAddedTo.valueDeterminingComponent != null) {
+								wireError(0);
+							}
+							
+							wireToBeAddedTo = wire;
+							break;
+						}else if(line.endingPointOpen && ((temp1 == line.x1 && temp2 == line.y1) || (temp1 == line.x2 && temp2 == line.y2))) {
+							wireToBeAddedTo = wire;
+						}else {
+							endingPointOpen = true;
+						}
+					}
+					if(endingPointClosed) {
+						break;
+					}
+				}
+				createWire(endingPointClosed, endingPointOpen);
 				wireDirectionFound = false;
+				wireStarted = false;
 			}
 		});
 
@@ -164,6 +303,9 @@ public class Schematic extends Canvas {
 			} else if (event.getCode() == KeyCode.DELETE && selectedComponent != null) {
 				currState.components.remove(selectedComponent);
 				refresh(true);
+			} else if (event.getCode() == KeyCode.ENTER && selectedComponent != null) {
+				deselectAllComponents();
+				refresh(false);
 			}
 		});
 		createGridLines();
@@ -216,6 +358,7 @@ public class Schematic extends Canvas {
 	public void clear(boolean saveSchematicState) {
 		currState.wires = new ArrayList<Wire>();
 		currState.components = new ArrayList<Component>();
+		deselectAllComponents();
 		refresh(saveSchematicState);
 	}
 
@@ -284,39 +427,90 @@ public class Schematic extends Canvas {
 		}
 	}
 
-	public void createWire() {
+	public void deselectAllComponents() {
+		if (selectedComponent != null) {
+			selectedComponent.selected = false;
+			selectedComponent = null;
+		}
+
+	}
+
+	public void createWire(boolean endingPointClosed, boolean endingPointOpen) {
 		// TODO: improve this to make it easier to use
 		Wire tempWire = new Wire();
 
-		/*
-		 * double tempStartX = wireStartX - (wireStartX % 10); double tempStartY =
-		 * wireStartY - (wireStartY % 10);
-		 * 
-		 * double tempEndX = wireEndX - (wireEndX % 10); double tempEndY = wireEndY -
-		 * (wireEndY % 10);
-		 */
-
-		double tempStartX = Math.round((float) wireStartX / 10) * 10;
+		double tempStartX = Math.round((float) wireStartX / 10) * 10 - 1;
 		double tempStartY = Math.round((float) wireStartY / 10) * 10;
-		double tempEndX = Math.round((float) wireEndX / 10) * 10;
+		double tempEndX = Math.round((float) wireEndX / 10) * 10 - 1;
 		double tempEndY = Math.round((float) wireEndY / 10) * 10;
 
+		Line line1;
+		Line line2;
 		if (wireDirection == 0) {
-			Line line1 = new Line(tempStartX, tempStartY, tempEndX, tempStartY);
-			Line line2 = new Line(tempEndX, tempStartY, tempEndX, tempEndY);
+			line1 = new Line(tempStartX, tempStartY, tempEndX, tempStartY, false, false, false, false);
+			line2 = new Line(tempEndX, tempStartY, tempEndX, tempEndY, false, endingPointOpen, false, endingPointClosed);
 
 			tempWire.addLine(line1);
 			tempWire.addLine(line2);
 		} else {
-			Line line1 = new Line(tempStartX, tempStartY, tempStartX, tempEndY);
-			Line line2 = new Line(tempStartX, tempEndY, tempEndX, tempEndY);
+			line1 = new Line(tempStartX, tempStartY, tempStartX, tempEndY, false, false, false, false);
+			line2 = new Line(tempStartX, tempEndY, tempEndX, tempEndY, false, endingPointOpen, false, endingPointClosed);
 
 			tempWire.addLine(line1);
 			tempWire.addLine(line2);
+
 		}
 
-		currState.wires.add(tempWire);
+		if (wireToBeAddedTo != null) {
+			if(wireToBeAddedTo.valueDeterminingComponent != null && valueDetermingComponent != null) {
+				wireError(0);
+			}else if(wireToBeAddedTo.valueDeterminingComponent == null) {
+				wireToBeAddedTo.addLine(line1);
+				wireToBeAddedTo.addLine(line2);
+				wireToBeAddedTo.valueDeterminingComponent = valueDetermingComponent;
+				wireToBeAddedTo = null;
+			}else {
+				wireToBeAddedTo.addLine(line1);
+				wireToBeAddedTo.addLine(line2);
+				wireToBeAddedTo = null;
+			}
+		} else {
+			if(valueDetermingComponent != null) {
+				tempWire.valueDeterminingComponent = valueDetermingComponent;
+			}
+			currState.wires.add(tempWire);
+		}
+		
+		valueDetermingComponent = null;
+		wireToBeAddedTo = null;
+
+		debugWires(); // TODO: REMOVE THIS SHIT
+
 		refresh(true);
+	}
+	
+	// The first wire gets to stay and the second wire simply gives the first wire its lines. Either the first or neither wires need to have a value determing component. 
+	public void combineWires(Wire one, Wire two) {
+		for(Line line : two.lines) {
+			one.addLine(line);
+		}
+		currState.wires.remove(two);
+	}
+	
+	public void wireError(int err) {
+		switch(err) {
+			case 0:
+				System.err.println("There are more than one value determing components on that wire node!");
+				break;
+		}
+	}
+
+	public void debugWires() {
+		System.out.println("NUM WIRES: " + currState.wires.size());
+		for (int i = 0; i < currState.wires.size(); i++) {
+			System.out.println("Wire " + i + "  |  " + currState.wires.get(i).lines.size() + " lines  |  " + "valueDetermingComponent: " + currState.wires.get(i).valueDeterminingComponent);
+		}
+		System.out.println("_____________________________________________________________________________________________________________\n");
 	}
 
 	public void renderCurrentWire() {
@@ -325,9 +519,9 @@ public class Schematic extends Canvas {
 		gc.setStroke(Color.RED);
 		gc.setLineWidth(2);
 
-		double tempStartX = Math.round((float) wireStartX / 10) * 10;
+		double tempStartX = Math.round((float) wireStartX / 10) * 10 - 1;
 		double tempStartY = (Math.round((float) wireStartY / 10) * 10) - 1;
-		double tempEndX = Math.round((float) wireEndX / 10) * 10;
+		double tempEndX = Math.round((float) wireEndX / 10) * 10 - 1;
 		double tempEndY = (Math.round((float) wireEndY / 10) * 10) - 1;
 
 		if (wireDirection == 0) {
@@ -339,13 +533,19 @@ public class Schematic extends Canvas {
 		}
 	}
 
+	public void startLine(MouseEvent e) {
+		wireStartX = e.getX();
+		wireStartY = e.getY();
+		wireStarted = true;
+	}
+
 	// TODO: make these methods
 	public void undo() {
 		// TODO: Figure it out
 		if (pastStates.size() > 0) {
 			clear(false);
 			currState = new SchematicState(pastStates.removeFirst());
-		}else {
+		} else {
 			pastStates.clear();
 			lastState = new SchematicState(currState);
 		}
@@ -353,14 +553,7 @@ public class Schematic extends Canvas {
 	}
 
 	public void redo() {
-		// TODO: Implement this in the future, but not now. It's not that important right now to create a functional program.
-	}
-
-	public void cleanUpWires() {
-		/*
-		 * TODO: Figure this shit out specifications: 1. 2 "Wire" instances that could
-		 * be simplified into 1, should be. 2. Any connected wires should be merged. 3.
-		 * idk how to do this but we shall figure it out soon enough lol.
-		 */
+		// TODO: Implement this in the future, but not now. It's not that important
+		// right now to create a functional program.
 	}
 }

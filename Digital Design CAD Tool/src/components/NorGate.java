@@ -3,11 +3,8 @@ import components.Component;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.image.Image;
 public class NorGate extends Component{
-	public boolean[] inputs;
-	public boolean[] outputs = new boolean[1];
-	public int numInputs;
 	public NorGate(double xPos, double yPos, int rotation, Canvas canvas, int numInputs) {
-		super(xPos, yPos, rotation, canvas);
+		super(60, 40, xPos, yPos, rotation, canvas, numInputs);
 		inputs = new boolean[numInputs];
 		this.numInputs = numInputs;
 		this.id = "NOR";
@@ -17,13 +14,13 @@ public class NorGate extends Component{
 		this.currImage = images[0];
 	}
 	public void setOutput(){
-		outputs[0] = false;
+		output = false;
 		for(boolean input : inputs) {
 			if(input == true) { 
-				outputs[0] = true;
+				output = true;
 			}
 		}
 		
-		outputs[0] = !outputs[0];
+		output = !output;
 	}
 }

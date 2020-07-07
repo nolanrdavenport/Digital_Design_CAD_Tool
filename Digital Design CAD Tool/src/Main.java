@@ -31,6 +31,7 @@ public class Main extends Application {
 	public Scene scene;
 	public String selectedItem = "NONE";
 	public ArrayList<Schematic> schematics;
+	public Schematic selectedSchematic;
 	public TabPane controlTabPane;
 
 	public static void main(String[] args) {
@@ -140,6 +141,7 @@ public class Main extends Application {
 		schematicItem.setOnAction(e -> {
 			openNewSchematicWindow();
 		});
+		schematicItem.setAccelerator(new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN));
 		MenuItem truthTableItem = new MenuItem("Truth Table");
 		newMenu.getItems().add(schematicItem);
 		newMenu.getItems().add(truthTableItem);
@@ -305,6 +307,10 @@ public class Main extends Application {
 		wireButton.setOnAction(e -> {
 			selectedItem = "~WIRE";
 			scene.setCursor(Cursor.DEFAULT);
+			for(Schematic sch : schematics) {
+				sch.deselectAllComponents();
+				sch.refresh(false);
+			}
 		});
 		wireButton.setGraphic(new ImageView(wireImage));
 		grid.add(wireButton, 0, 1, 1, 1);
