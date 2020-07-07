@@ -3,7 +3,6 @@ import java.util.Deque;
 import java.util.LinkedList;
 
 import components.*;
-import javafx.event.Event;
 import javafx.scene.Cursor;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -171,7 +170,6 @@ public class Schematic extends Canvas {
 						}
 						break;
 					}
-
 				}
 
 				// If the wire is to not be started from a component, and instead from another
@@ -262,10 +260,15 @@ public class Schematic extends Canvas {
 							endingPointClosed = true;
 							if(wireToBeAddedTo == null) {
 								wireToBeAddedTo = wire;
-							}else if(valueDetermingComponent != null && wireToBeAddedTo.valueDeterminingComponent != null) {
+							}else if(wireToBeAddedTo.valueDeterminingComponent != null && wire.valueDeterminingComponent != null) {
 								wireError(0);
-							}else if(valueDetermingComponent != null) {
-								
+							}else if(wireToBeAddedTo.valueDeterminingComponent != null) {
+								combineWires(wireToBeAddedTo, wire);
+							}else if(wire.valueDeterminingComponent != null) {
+								combineWires(wire, wireToBeAddedTo);
+								wireToBeAddedTo = wire;
+							}else {
+								combineWires(wireToBeAddedTo, wire);
 							}
 							
 							break;
@@ -274,11 +277,17 @@ public class Schematic extends Canvas {
 							endingPointClosed = true;
 							if(wireToBeAddedTo == null) {
 								wireToBeAddedTo = wire;
-							}else if(valueDetermingComponent != null && wireToBeAddedTo.valueDeterminingComponent != null) {
+							}else if(wireToBeAddedTo.valueDeterminingComponent != null && wire.valueDeterminingComponent != null) {
 								wireError(0);
+							}else if(wireToBeAddedTo.valueDeterminingComponent != null) {
+								combineWires(wireToBeAddedTo, wire);
+							}else if(wire.valueDeterminingComponent != null) {
+								combineWires(wire, wireToBeAddedTo);
+								wireToBeAddedTo = wire;
+							}else {
+								combineWires(wireToBeAddedTo, wire);
 							}
 							
-							wireToBeAddedTo = wire;
 							break;
 						}else if(line.endingPointOpen && ((temp1 == line.x1 && temp2 == line.y1) || (temp1 == line.x2 && temp2 == line.y2))) {
 							wireToBeAddedTo = wire;
@@ -491,6 +500,7 @@ public class Schematic extends Canvas {
 	
 	// The first wire gets to stay and the second wire simply gives the first wire its lines. Either the first or neither wires need to have a value determing component. 
 	public void combineWires(Wire one, Wire two) {
+		System.out.println("got to the combine wires method");
 		for(Line line : two.lines) {
 			one.addLine(line);
 		}
@@ -508,7 +518,13 @@ public class Schematic extends Canvas {
 	public void debugWires() {
 		System.out.println("NUM WIRES: " + currState.wires.size());
 		for (int i = 0; i < currState.wires.size(); i++) {
-			System.out.println("Wire " + i + "  |  " + currState.wires.get(i).lines.size() + " lines  |  " + "valueDetermingComponent: " + currState.wires.get(i).valueDeterminingComponent);
+			boolean hasOpenEnd = false;
+			for(Line line : currState.wires.get(i).lines) {
+				if(line.endingPointOpen) {
+					hasOpenEnd = true;
+				}
+			}
+			System.out.println("Wire " + i + "  |  " + currState.wires.get(i).lines.size() + " lines  |  " + "valueDetermingComponent: " + currState.wires.get(i).valueDeterminingComponent + "  |  openEnd: "+hasOpenEnd);
 		}
 		System.out.println("_____________________________________________________________________________________________________________\n");
 	}
