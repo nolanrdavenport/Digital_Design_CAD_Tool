@@ -249,7 +249,7 @@ public class Main extends Application {
 	
 	/*
 	 * Sets up the component tab.
-	 * @param The grid pane that holds the components.
+	 * @param grid The grid pane that holds the components.
 	 */
 	public void setupComponentTab(GridPane grid) {
 		Image andImage = new Image("Images/AND/AND_image.png", 60, 40, false, false);
@@ -304,7 +304,7 @@ public class Main extends Application {
 	
 	/*
 	 * Sets up the tool tab.
-	 * @param The grid that holds the tools.
+	 * @param grid The grid that holds the tools.
 	 */
 	public void setupToolTab(GridPane grid) {
 		//TODO: Finish this method
@@ -346,7 +346,9 @@ public class Main extends Application {
 
 	/*
 	 * Creates a new schematic and adds it to the tab pane.
-	 * @param The name of the schematic, and the dimensions (width and height) of the schematic.
+	 * @param name The name of the schematic
+	 * @param width Width of the schematic.
+	 * @param height Height of the schematic.
 	 */
 	public void createSchematic(String name, int width, int height) {
 		Schematic schematic = new Schematic(this, tabPane, width, height);
