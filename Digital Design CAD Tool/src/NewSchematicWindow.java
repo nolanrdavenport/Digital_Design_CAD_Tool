@@ -1,3 +1,6 @@
+/*
+ * Prompt that allows a user to create a new schematic and specify the name, width, and height. 
+ */
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -51,6 +54,9 @@ public class NewSchematicWindow extends Stage {
 		});
 	}
 	
+	/*
+	 * Called when the user presses the submit button. Calls the createSchematic() method in Main and closes the new schematic window. 
+	 */
 	public void submit(String name, int width, int height) {
 		main.createSchematic(name, width, height);
 		this.close();

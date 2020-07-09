@@ -1,3 +1,6 @@
+/*
+ * Holds information for a single line. 
+ */
 package components;
 
 public class Line {

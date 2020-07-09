@@ -1,3 +1,9 @@
+/*
+ * Digital Design CAD Tool
+ * Developed by:
+ * Nolan Davenport
+ * Computer Engineering student at The University of Texas at Dallas. 
+ */
 import java.util.ArrayList;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
@@ -24,7 +30,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Menu;
 
 public class Main extends Application {
-
+	
 	public Stage primaryStage;
 	public MenuBar menuBar;
 	public TabPane tabPane;
@@ -33,15 +39,20 @@ public class Main extends Application {
 	public ArrayList<Schematic> schematics;
 	public Schematic selectedSchematic;
 	public TabPane controlTabPane;
-
+	
 	public static void main(String[] args) {
 		Application.launch(args);
 	}
-
+	
+	/*
+	 * Start of the application. Sets up the stage and begins program execution. 
+	 */
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-		schematics = new ArrayList<>();
-		// General Setup
+		// Holds a list of all open schematics
+		schematics = new ArrayList<Schematic>();
+		
+		// Setup the application layout and other general setup
 		primaryStage.setTitle("Digital Design CAD Tool");
 		MenuBar menuBar = setupMenuBar();
 		SplitPane splitPane = new SplitPane();
@@ -75,7 +86,7 @@ public class Main extends Application {
 
 		});
 
-		// adding welcome text tab
+		// Adding welcome text tab
 		Tab welcomeTab = createWelcomeTab();
 		tabPane.getTabs().add(welcomeTab);
 
@@ -115,6 +126,10 @@ public class Main extends Application {
 		
 	}
 	
+	/*
+	 * Creates the welcome tab.
+	 * @return The welcome tab object. 
+	 */
 	public Tab createWelcomeTab() {
 		TextArea welcomeText = new TextArea();
 		welcomeText.appendText("Welcome to the Digital Design CAD Tool!");
@@ -130,8 +145,9 @@ public class Main extends Application {
 	}
 
 	/*
-	 * This method creates and returns the menu bar that is used at the top of the
+	 * Creates the menu bar that is used at the top of the
 	 * program.
+	 * @return The menu bar object.
 	 */
 	public MenuBar setupMenuBar() {
 		// File Menu
@@ -230,7 +246,11 @@ public class Main extends Application {
 
 		return menuBar;
 	}
-
+	
+	/*
+	 * Sets up the component tab.
+	 * @param The grid pane that holds the components.
+	 */
 	public void setupComponentTab(GridPane grid) {
 		Image andImage = new Image("Images/AND/AND_image.png", 60, 40, false, false);
 		Button andButton = new Button();
@@ -282,6 +302,10 @@ public class Main extends Application {
 		controlTabPane.getTabs().add(componentTab);
 	}
 	
+	/*
+	 * Sets up the tool tab.
+	 * @param The grid that holds the tools.
+	 */
 	public void setupToolTab(GridPane grid) {
 		//TODO: Finish this method
 		Image selectImage = new Image("Images/Select.png", 40, 40, false, false);
@@ -321,7 +345,8 @@ public class Main extends Application {
 	}
 
 	/*
-	 * This method creates a new schematic and adds it to the tab pane.
+	 * Creates a new schematic and adds it to the tab pane.
+	 * @param The name of the schematic, and the dimensions (width and height) of the schematic.
 	 */
 	public void createSchematic(String name, int width, int height) {
 		Schematic schematic = new Schematic(this, tabPane, width, height);
@@ -333,6 +358,9 @@ public class Main extends Application {
 
 	}
 	
+	/*
+	 * Opens a prompt for creating a new schematic. 
+	 */
 	public void openNewSchematicWindow() {
 		new NewSchematicWindow(this);
 	}

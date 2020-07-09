@@ -1,7 +1,10 @@
+/*
+ * Schematic class. Runs the logic behind the displaying and functionality of the schematic feature. Displayed onto the screen using a Canvas.
+ */
+
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedList;
-
 import components.*;
 import javafx.scene.Cursor;
 import javafx.scene.canvas.Canvas;
@@ -13,6 +16,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 
 public class Schematic extends Canvas {
+	// General variables
 	public int width, height;
 	public int scale = 1;
 	public GraphicsContext gc;
@@ -27,7 +31,7 @@ public class Schematic extends Canvas {
 	private double compMouseX;
 	private double compMouseY;
 
-	// For making wires
+	// For creating wires
 	private double wireStartX;
 	private double wireStartY;
 	private double wireEndX;
@@ -47,12 +51,16 @@ public class Schematic extends Canvas {
 	public Deque<SchematicState> futureStates;
 	public SchematicState lastState;
 
+	// For selecting components and wires
 	Component selectedComponent = null;
+	Wire selectedWire = null;
 
+	/*
+	 * Schematic constructor. Creates and initializes instances of the schematic class.
+	 */
 	public Schematic(Main main, TabPane tabPane, int width, int height) {
+		// initialization
 		super(width, height);
-		// components = new ArrayList<Component>();
-		// wires = new ArrayList<Wire>();
 		currState = new SchematicState();
 		pastStates = new LinkedList<SchematicState>();
 		futureStates = new LinkedList<SchematicState>();
@@ -67,18 +75,18 @@ public class Schematic extends Canvas {
 		wireDirectionFound = false;
 		wireStarted = false;
 
+		// makes the background of the schematic black. 
 		gc.fillRect(0, 0, width, height);
 
 		// This event handler handles left clicks
 		this.setOnMouseClicked(event -> {
 			if (event.getButton() == MouseButton.PRIMARY && main.selectedItem != "NONE"
 					&& !main.selectedItem.contains("~")) {
-				placeItem(main.selectedItem, event);
+				placeComponent(main.selectedItem, event);
 			} else if (event.getButton() == MouseButton.PRIMARY && main.selectedItem == "~SELECT") {
+				// For selecting components or wires with the select tool.
 				boolean selectedAnItem = false;
-				for (Component comp : currState.components) {
-					comp.selected = false;
-				}
+				deselectAllComponents();
 				for (Component comp : currState.components) {
 					if (!comp.selected && comp.insideBounds(event.getX(), event.getY())) {
 						selectComponent(comp);
@@ -86,31 +94,35 @@ public class Schematic extends Canvas {
 						break;
 					}
 				}
-				// If no item is selected, unselect the previously selected item
-				if (!selectedAnItem) {
-					for (Component comp : currState.components) {
-						comp.square();
-						comp.selected = false;
+				if(!selectedAnItem) {
+					for (Wire wire : currState.wires) {
+						if (!wire.selected && wire.clickedOnALine(event.getX(), event.getY())) {
+							selectWire(wire);
+							selectedAnItem = true;
+							break;
+						}
 					}
-					selectedComponent = null;
 				}
 				refresh(false);
 			}
 		});
-
+		
+		// For starting features that require dragging.
 		this.setOnMousePressed(event -> {
 			if (event.getButton() == MouseButton.MIDDLE) {
+				// For moving the viewport around
 				mouseX = event.getScreenX();
 				mouseY = event.getScreenY();
 				main.scene.setCursor(Cursor.MOVE);
 			} else if (event.getButton() == MouseButton.PRIMARY && main.selectedItem == "~SELECT") {
+				// For moving objects around.
 				compMouseX = event.getX();
 				compMouseY = event.getY();
 			} else if (event.getButton() == MouseButton.PRIMARY && main.selectedItem == "~WIRE") {
+				// For creating new wires. 
 				deselectAllComponents();
+				// Ensuring lines can be started from component inputs and outputs at various rotations. 
 				for (Component comp : currState.components) {
-					// TODO: this will only work with the first orientation, so you have to make it
-					// work for all 4 orientations.
 					switch (comp.rotation) {
 					case 0:
 						for (int i = 20; i <= (comp.numInputs - 1) * 40 + 20; i += 40) {
@@ -172,8 +184,7 @@ public class Schematic extends Canvas {
 					}
 				}
 
-				// If the wire is to not be started from a component, and instead from another
-				// wire, we know the wire that we should add onto.
+				// For starting a wire from another wire. 
 				if (!wireStarted) {
 					for (Wire wire : currState.wires) {
 						for (Line line : wire.lines) {
@@ -199,12 +210,15 @@ public class Schematic extends Canvas {
 				}
 			}
 		});
-
+		
+		// Handles features that require dragging. 
 		this.setOnMouseDragged(event -> {
 			if (event.getButton() == MouseButton.MIDDLE) {
+				// For handling the viewport dragging. 
 				middleMouseDragged(event);
 			} else if (event.getButton() == MouseButton.PRIMARY && selectedComponent != null
 					&& main.selectedItem == "~SELECT") {
+				// For moving objects.
 				double deltaX = event.getX() - compMouseX;
 				double deltaY = event.getY() - compMouseY;
 				selectedComponent.setX(selectedComponent.getX() + deltaX);
@@ -216,6 +230,7 @@ public class Schematic extends Canvas {
 				justDragged = true;
 				refresh(false);
 			} else if (event.getButton() == MouseButton.PRIMARY && main.selectedItem == "~WIRE") {
+				// For creating wires. 
 				if (wireStarted) {
 					wireEndX = event.getX();
 					wireEndY = event.getY();
@@ -233,9 +248,11 @@ public class Schematic extends Canvas {
 
 			}
 		});
-
+		
+		// For ending actions that required dragging.
 		this.setOnMouseReleased(event -> {
 			if (event.getButton() == MouseButton.MIDDLE) {
+				// For changing mouse symbol after dragging.
 				if (!main.selectedItem.contains("~") && main.selectedItem != "NONE") {
 					main.scene.setCursor(Cursor.CROSSHAIR);
 				} else {
@@ -243,11 +260,13 @@ public class Schematic extends Canvas {
 				}
 			} else if (event.getButton() == MouseButton.PRIMARY && selectedComponent != null
 					&& main.selectedItem == "~SELECT") {
+				// For ending a component drag. 
 				if (justDragged) {
 					refresh(true);
 					justDragged = false;
 				}
 			} else if (event.getButton() == MouseButton.PRIMARY && main.selectedItem == "~WIRE" && wireDirectionFound) {
+				// For ending the wire creation process.
 				boolean endingPointClosed = false;
 				boolean endingPointOpen = false;
 				float temp1 = Math.round((float) wireEndX / 10) * 10 - 1;
@@ -304,22 +323,35 @@ public class Schematic extends Canvas {
 				wireStarted = false;
 			}
 		});
-
+		
+		// Handles key presses
 		main.scene.setOnKeyPressed(event -> {
 			if (event.getCode() == KeyCode.R && selectedComponent != null) {
+				// For rotating objects. 
 				selectedComponent.rotate();
 				refresh(true);
-			} else if (event.getCode() == KeyCode.DELETE && selectedComponent != null) {
-				currState.components.remove(selectedComponent);
-				refresh(true);
-			} else if (event.getCode() == KeyCode.ENTER && selectedComponent != null) {
+			} else if (event.getCode() == KeyCode.DELETE) {
+				// For deleting objects. 
+				if(selectedComponent != null) {
+					currState.components.remove(selectedComponent);
+					deselectAllComponents();
+					refresh(true);
+				}else if(selectedWire != null) {
+					currState.wires.remove(selectedWire);
+					deselectAllComponents();
+					refresh(true);
+				}
+				
+			} else if (event.getCode() == KeyCode.ENTER) {
 				deselectAllComponents();
 				refresh(false);
 			}
 		});
+		
+		
 		createGridLines();
 
-		// Give scroll functionality to scrollwheel - because why not?
+		// Give scroll functionality to the scroll wheel.
 		this.setOnScroll(event -> {
 			if (event.getDeltaY() < 0) {
 				zoom(1);
@@ -331,7 +363,10 @@ public class Schematic extends Canvas {
 		refresh(true);
 
 	}
-
+	
+	/*
+	 * Called when the middle mouse is dragged. For dragging the viewport.
+	 */
 	public void middleMouseDragged(MouseEvent event) {
 		double deltaX = event.getScreenX() - mouseX;
 		double deltaY = event.getScreenY() - mouseY;
@@ -340,7 +375,10 @@ public class Schematic extends Canvas {
 		mouseX = event.getScreenX();
 		mouseY = event.getScreenY();
 	}
-
+	
+	/*
+	 * Creates grid lines used on the schematic to assist users in placing objects and wires.
+	 */
 	public void createGridLines() {
 		gc.setStroke(Color.rgb(50, 50, 50, 0.5));
 		gc.setLineWidth(1);
@@ -351,7 +389,11 @@ public class Schematic extends Canvas {
 			gc.strokeLine(i, 0, i, height);
 		}
 	}
-
+	
+	/*
+	 * Zooms in the schematic. 
+	 * @param direction The direction of zoom. 0 is for zooming in and 1 is for zooming out. 
+	 */
 	public void zoom(int direction) {
 		double zoomFactor = 1.1;
 		if (direction == 1) {
@@ -363,14 +405,22 @@ public class Schematic extends Canvas {
 		}
 
 	}
-
+	
+	/*
+	 * Clears the schematic.
+	 * @param saveSchematicState Boolean that determines if the schematic state should be saved for use in the undo feature.
+	 */
 	public void clear(boolean saveSchematicState) {
 		currState.wires = new ArrayList<Wire>();
 		currState.components = new ArrayList<Component>();
 		deselectAllComponents();
 		refresh(saveSchematicState);
 	}
-
+	
+	/*
+	 * Refreshes the screen by clearing everything and redrawing the components based on the current state.
+	 * @param saveSchematicState Boolean that determines if the schematic state should be saved for use in the undo feature.
+	 */
 	public void refresh(boolean saveSchematicState) {
 		if (saveSchematicState) {
 			pastStates.addFirst(new SchematicState(lastState));
@@ -398,8 +448,13 @@ public class Schematic extends Canvas {
 		}
 
 	}
-
-	public void placeItem(String selectedItem, MouseEvent event) {
+	
+	/*
+	 * Places a component into the schematic.
+	 * @param selectedItem The string for the selected item. 
+	 * @param event The mouse event that initiated the method call.
+	 */
+	public void placeComponent(String selectedItem, MouseEvent event) {
 		switch (selectedItem) {
 		case "AND":
 			currState.components.add(new AndGate((event.getX() - (event.getX() % 10)),
@@ -428,22 +483,50 @@ public class Schematic extends Canvas {
 		refresh(true);
 	}
 
+	/*
+	 * Selects the component.
+	 * @param comp The component that is to be selected.
+	 */
 	public void selectComponent(Component comp) {
 		if (comp.rotation == 0 || comp.rotation == 2) {
 			selectedComponent = comp;
 		} else {
 			selectedComponent = comp;
 		}
+		comp.selected = true;
+	}
+	
+	/*
+	 * Selects the wire.
+	 * @param wire The wire that is to be selected.
+	 */
+	public void selectWire(Wire wire) {
+		wire.selected = true;
+		selectedWire = wire;
 	}
 
+	/*
+	 * Loops through all components and wire and ensures that they are all deselected. Sets the selectedComponent and selectedWire variables to null.
+	 */
 	public void deselectAllComponents() {
-		if (selectedComponent != null) {
-			selectedComponent.selected = false;
-			selectedComponent = null;
+		for(Component comp : currState.components) {
+			comp.selected = false;
+			comp.square();
 		}
-
+		
+		for(Wire wire : currState.wires) {
+			wire.selected = false;
+		}
+		
+		selectedComponent = null;
+		selectedWire = null;
 	}
-
+	
+	/*
+	 * Creates a wire.
+	 * @param endingPointClosed Boolean for making the ending point closed.
+	 * @param endingPointOpen Boolean for making the ending point open.
+	 */
 	public void createWire(boolean endingPointClosed, boolean endingPointOpen) {
 		// TODO: improve this to make it easier to use
 		Wire tempWire = new Wire();
@@ -498,7 +581,11 @@ public class Schematic extends Canvas {
 		refresh(true);
 	}
 	
-	// The first wire gets to stay and the second wire simply gives the first wire its lines. Either the first or neither wires need to have a value determing component. 
+	/*
+	 * Combines wires into one.
+	 * @param one The first wire. This instance doesn't get removed. The other parameter's wires are added to this wire.
+	 * @param two The second wire. This instance's wires gets copied to the first wire and this instance is removed.
+	 */
 	public void combineWires(Wire one, Wire two) {
 		System.out.println("got to the combine wires method");
 		for(Line line : two.lines) {
@@ -507,6 +594,10 @@ public class Schematic extends Canvas {
 		currState.wires.remove(two);
 	}
 	
+	/*
+	 * Displays wire errors.
+	 * @param err The code that represents the error.
+	 */
 	public void wireError(int err) {
 		switch(err) {
 			case 0:
@@ -514,7 +605,10 @@ public class Schematic extends Canvas {
 				break;
 		}
 	}
-
+	
+	/*
+	 * Displays useful information for debugging the wire system.
+	 */
 	public void debugWires() {
 		System.out.println("NUM WIRES: " + currState.wires.size());
 		for (int i = 0; i < currState.wires.size(); i++) {
@@ -528,7 +622,10 @@ public class Schematic extends Canvas {
 		}
 		System.out.println("_____________________________________________________________________________________________________________\n");
 	}
-
+	
+	/*
+	 * Renders the current wire before actually creating a wire object. Used for displaying the possible wire location and properties to the user.
+	 */
 	public void renderCurrentWire() {
 		refresh(false);
 
@@ -548,14 +645,20 @@ public class Schematic extends Canvas {
 			gc.strokeLine(tempStartX, tempEndY, tempEndX, tempEndY);
 		}
 	}
-
+	
+	/*
+	 * Starts a line.
+	 * @param e the event that initiated the start of the line.
+	 */
 	public void startLine(MouseEvent e) {
 		wireStartX = e.getX();
 		wireStartY = e.getY();
 		wireStarted = true;
 	}
 
-	// TODO: make these methods
+	/*
+	 * Undoes a previous action. Goes back to a previous schematic state.
+	 */
 	public void undo() {
 		// TODO: Figure it out
 		if (pastStates.size() > 0) {
@@ -565,9 +668,13 @@ public class Schematic extends Canvas {
 			pastStates.clear();
 			lastState = new SchematicState(currState);
 		}
+		deselectAllComponents();
 		refresh(false);
 	}
-
+	
+	/*
+	 * Redoes an action that was undone. Goes forward to a previously undone state.
+	 */
 	public void redo() {
 		// TODO: Implement this in the future, but not now. It's not that important
 		// right now to create a functional program.
