@@ -478,6 +478,21 @@ public class Schematic extends Canvas {
 			currState.components.add(new NotGate((event.getX() - (event.getX() % 10)),
 					(event.getY() - (event.getY() % 10)), 0, this, 2));
 			break;
+		case "IO_IN":
+			//TODO: CHANGE THIS TO ALLOW USER TO CHANGE NAME
+			currState.components.add(new IOPort((event.getX() - (event.getX() % 10)),
+					(event.getY() - (event.getY() % 10)), 0, this, "in", "temp"));
+			break;
+		case "IO_OUT":
+			//TODO: CHANGE THIS TO ALLOW USER TO CHANGE NAME
+			currState.components.add(new IOPort((event.getX() - (event.getX() % 10)),
+					(event.getY() - (event.getY() % 10)), 0, this, "out", "temp"));
+			break;
+		case "IO_BI":
+			//TODO: CHANGE THIS TO ALLOW USER TO CHANGE NAME
+			currState.components.add(new IOPort((event.getX() - (event.getX() % 10)),
+					(event.getY() - (event.getY() % 10)), 0, this, "bi", "temp"));
+			break;
 		default:
 			System.err.println("This is not a valid component ID: " + selectedItem);
 		}

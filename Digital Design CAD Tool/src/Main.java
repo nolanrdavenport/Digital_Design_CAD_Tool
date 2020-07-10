@@ -297,6 +297,33 @@ public class Main extends Application {
 		notButton.setGraphic(new ImageView(notImage));
 		grid.add(notButton, 0, 2, 1, 1);
 		
+		Image inputPortImage = new Image("Images/IOPort/in/IO_IN_image.png", 60, 40, false, false);
+		Button inputPortButton = new Button();
+		inputPortButton.setOnAction(e -> {
+			selectedItem = "IO_IN";
+			scene.setCursor(Cursor.CROSSHAIR);
+		});
+		inputPortButton.setGraphic(new ImageView(inputPortImage));
+		grid.add(inputPortButton, 1, 2, 1, 1);
+		
+		Image outputPortImage = new Image("Images/IOPort/out/IO_OUT_image.png", 60, 40, false, false);
+		Button outputPortButton = new Button();
+		outputPortButton.setOnAction(e -> {
+			selectedItem = "IO_OUT";
+			scene.setCursor(Cursor.CROSSHAIR);
+		});
+		outputPortButton.setGraphic(new ImageView(outputPortImage));
+		grid.add(outputPortButton, 0, 3, 1, 1);
+		
+		Image biPortImage = new Image("Images/IOPort/bi/IO_BI_image.png", 60, 40, false, false);
+		Button biPortButton = new Button();
+		biPortButton.setOnAction(e -> {
+			selectedItem = "IO_BI";
+			scene.setCursor(Cursor.CROSSHAIR);
+		});
+		biPortButton.setGraphic(new ImageView(biPortImage));
+		grid.add(biPortButton, 1, 3, 1, 1);
+		
 		ScrollPane componentScrollPane = new ScrollPane(grid);
 		Tab componentTab = new Tab("Components", componentScrollPane);
 		controlTabPane.getTabs().add(componentTab);
