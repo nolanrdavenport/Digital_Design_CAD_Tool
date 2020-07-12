@@ -1,0 +1,8 @@
+About
+
+This program is a purely educational digital design CAD tool used for people to quickly sketch up digital systems designs.
+
+Developed by: Nolan Davenport - Computer Engineering student at The University of Texas at Dallas.
+
+A lot of the features in this program were suggested by people in the computer engineering community. I thought I'd give credit to the Reddit users for their ideas:
+/u/PlayboySkeleton suggested customizable hot keys and component alignment. 

@@ -5,6 +5,9 @@
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedList;
+
+import com.sun.javafx.geom.Vec2d;
+
 import components.*;
 import javafx.scene.Cursor;
 import javafx.scene.canvas.Canvas;
@@ -42,6 +45,9 @@ public class Schematic extends Canvas {
 	int wireDetectionThreshold = 4;
 	private Wire wireToBeAddedTo = null;
 	private Component valueDeterminingComponent = null;
+	enum WireStartLocation {
+		COMPONENT, WIRE;
+	}
 
 	// For storing and manipulating schematic states
 	public SchematicState currState;
@@ -80,6 +86,9 @@ public class Schematic extends Canvas {
 
 		// This event handler handles left clicks
 		this.setOnMouseClicked(event -> {
+			double mouseEventX = event.getX();
+			double mouseEventY = event.getY();
+			
 			if (event.getButton() == MouseButton.PRIMARY && main.selectedItem != "NONE"
 					&& !main.selectedItem.contains("~")) {
 				placeComponent(main.selectedItem, event);
@@ -88,7 +97,7 @@ public class Schematic extends Canvas {
 				boolean selectedAnItem = false;
 				deselectAllComponents();
 				for (Component comp : currState.components) {
-					if (!comp.selected && comp.insideBounds(event.getX(), event.getY())) {
+					if (!comp.selected && comp.insideBounds(mouseEventX, mouseEventY)) {
 						selectComponent(comp);
 						selectedAnItem = true;
 						break;
@@ -96,7 +105,7 @@ public class Schematic extends Canvas {
 				}
 				if(!selectedAnItem) {
 					for (Wire wire : currState.wires) {
-						if (!wire.selected && wire.clickedOnALine(event.getX(), event.getY())) {
+						if (!wire.selected && wire.clickedOnALine(mouseEventX, mouseEventY)) {
 							selectWire(wire);
 							selectedAnItem = true;
 							break;
@@ -109,6 +118,9 @@ public class Schematic extends Canvas {
 		
 		// For starting features that require dragging.
 		this.setOnMousePressed(event -> {
+			double mouseEventX = event.getX();
+			double mouseEventY = event.getY();
+			
 			if (event.getButton() == MouseButton.MIDDLE) {
 				// For moving the viewport around
 				mouseX = event.getScreenX();
@@ -116,87 +128,44 @@ public class Schematic extends Canvas {
 				main.scene.setCursor(Cursor.MOVE);
 			} else if (event.getButton() == MouseButton.PRIMARY && main.selectedItem == "~SELECT") {
 				// For moving objects around.
-				compMouseX = event.getX();
-				compMouseY = event.getY();
+				compMouseX = mouseEventX;
+				compMouseY = mouseEventY;
 			} else if (event.getButton() == MouseButton.PRIMARY && main.selectedItem == "~WIRE") {
 				// For creating new wires. 
 				deselectAllComponents();
-				// Ensuring lines can be started from component inputs and outputs at various rotations. 
-				for (Component comp : currState.components) {
-					switch (comp.rotation) {
-					case 0:
-						for (int i = 20; i <= (comp.numInputs - 1) * 40 + 20; i += 40) {
-							if (Math.abs(event.getX() - comp.getX()) <= wireDetectionThreshold
-									&& Math.abs(event.getY() - (comp.getY() + i)) <= wireDetectionThreshold) {
-								startLine(event);
-								break;
-							} else if (Math
-									.abs(event.getX() - (comp.getX() + (2 * comp.width))) <= wireDetectionThreshold
-									&& Math.abs(event.getY() - (comp.getY() + comp.height)) <= wireDetectionThreshold) {
-								valueDeterminingComponent = comp;
-								startLine(event);
-								break;
-							}
+				
+				for(Component comp : currState.components) {
+					boolean foundComponent = false;
+					for(Vec2d inputLocation : comp.inputLocations) {
+						if(Math.abs(mouseEventX - inputLocation.x) <= wireDetectionThreshold && Math.abs(mouseEventY - inputLocation.y) <= wireDetectionThreshold) {
+							startLine(event, WireStartLocation.COMPONENT);
+							foundComponent = true;
+							break;
 						}
-						break;
-					case 1:
-						for (int i = 20; i <= (comp.numInputs - 1) * 40 + 20; i += 40) {
-							if (Math.abs(event.getX() - (comp.getX() + i)) <= wireDetectionThreshold
-									&& Math.abs(event.getY() - (comp.getY())) <= wireDetectionThreshold) {
-								startLine(event);
-								break;
-							} else if (Math.abs(event.getX() - (comp.getX() + comp.height)) <= wireDetectionThreshold
-									&& Math.abs(event.getY()
-											- (comp.getY() + (2 * comp.width))) <= wireDetectionThreshold) {
-								valueDeterminingComponent = comp;
-								startLine(event);
-								break;
-							}
-						}
-					case 2:
-						for (int i = 20; i <= (comp.numInputs - 1) * 40 + 20; i += 40) {
-							if (Math.abs(event.getX() - (comp.getX() + (comp.width * 2))) <= wireDetectionThreshold
-									&& Math.abs(event.getY() - (comp.getY() + i)) <= wireDetectionThreshold) {
-								startLine(event);
-								break;
-							} else if (Math.abs(event.getX() - (comp.getX())) <= wireDetectionThreshold
-									&& Math.abs(event.getY() - (comp.getY() + comp.height)) <= wireDetectionThreshold) {
-								valueDeterminingComponent = comp;
-								startLine(event);
-								break;
-							}
-						}
-						break;
-					case 3:
-						for (int i = 20; i <= (comp.numInputs - 1) * 40 + 20; i += 40) {
-							if (Math.abs(event.getX() - (comp.getX() + i)) <= wireDetectionThreshold && Math
-									.abs(event.getY() - (comp.getY() + (comp.width * 2))) <= wireDetectionThreshold) {
-								startLine(event);
-								break;
-							} else if (Math.abs(event.getX() - (comp.getX() + comp.height)) <= wireDetectionThreshold
-									&& Math.abs(event.getY() - (comp.getY())) <= wireDetectionThreshold) {
-								valueDeterminingComponent = comp;
-								startLine(event);
-								break;
-							}
-						}
+					}
+					if(foundComponent) break;
+					if(Math.abs(mouseEventX - comp.outputLocation.x) <= wireDetectionThreshold && Math.abs(mouseEventY - comp.outputLocation.y) <= wireDetectionThreshold) {
+						valueDeterminingComponent = comp;
+						startLine(event, WireStartLocation.COMPONENT);
+						foundComponent = true;
 						break;
 					}
+					if(foundComponent) break;
 				}
 
 				// For starting a wire from another wire. 
 				if (!wireStarted) {
 					for (Wire wire : currState.wires) {
 						for (Line line : wire.lines) {
-							if (Math.abs(event.getX() - line.x1) <= wireDetectionThreshold
-									&& Math.abs(event.getY() - line.y1) <= wireDetectionThreshold) {
-								startLine(event);
+							if (Math.abs(mouseEventX - line.x1) <= wireDetectionThreshold
+									&& Math.abs(mouseEventY - line.y1) <= wireDetectionThreshold) {
+								startLine(event, WireStartLocation.WIRE);
 								wireToBeAddedTo = wire;
 								valueDeterminingComponent = wireToBeAddedTo.valueDeterminingComponent;
 								break;
-							} else if (Math.abs(event.getX() - line.x2) <= wireDetectionThreshold
-									&& Math.abs(event.getY() - line.y2) <= wireDetectionThreshold) {
-								startLine(event);
+							} else if (Math.abs(mouseEventX - line.x2) <= wireDetectionThreshold
+									&& Math.abs(mouseEventY - line.y2) <= wireDetectionThreshold) {
+								startLine(event, WireStartLocation.WIRE);
 								wireToBeAddedTo = wire;
 								valueDeterminingComponent = wireToBeAddedTo.valueDeterminingComponent;
 								break;
@@ -211,27 +180,30 @@ public class Schematic extends Canvas {
 		
 		// Handles features that require dragging. 
 		this.setOnMouseDragged(event -> {
+			double mouseEventX = event.getX();
+			double mouseEventY = event.getY();
+			
 			if (event.getButton() == MouseButton.MIDDLE) {
 				// For handling the viewport dragging. 
 				middleMouseDragged(event);
 			} else if (event.getButton() == MouseButton.PRIMARY && selectedComponent != null
 					&& main.selectedItem == "~SELECT") {
 				// For moving objects.
-				double deltaX = event.getX() - compMouseX;
-				double deltaY = event.getY() - compMouseY;
+				double deltaX = mouseEventX - compMouseX;
+				double deltaY = mouseEventY - compMouseY;
 				selectedComponent.setX(selectedComponent.getX() + deltaX);
 				selectedComponent.setY(selectedComponent.getY() + deltaY);
 
-				compMouseX = event.getX();
-				compMouseY = event.getY();
+				compMouseX = mouseEventX;
+				compMouseY = mouseEventY;
 
 				justDragged = true;
 				refresh(false);
 			} else if (event.getButton() == MouseButton.PRIMARY && main.selectedItem == "~WIRE") {
 				// For creating wires. 
 				if (wireStarted) {
-					wireEndX = event.getX();
-					wireEndY = event.getY();
+					wireEndX = mouseEventX;
+					wireEndY = mouseEventY;
 					if (!wireDirectionFound) {
 						wireDirectionFound = true;
 						double diffX = Math.abs(wireEndX - wireStartX);
@@ -262,6 +234,7 @@ public class Schematic extends Canvas {
 				if (justDragged) {
 					refresh(true);
 					justDragged = false;
+					selectedComponent.square();
 				}
 			} else if (event.getButton() == MouseButton.PRIMARY && main.selectedItem == "~WIRE" && wireDirectionFound) {
 				// For ending the wire creation process.
@@ -457,41 +430,44 @@ public class Schematic extends Canvas {
 	 * @param event The mouse event that initiated the method call.
 	 */
 	public void placeComponent(String selectedItem, MouseEvent event) {
+		double mouseEventX = event.getX();
+		double mouseEventY = event.getY();
+		
 		switch (selectedItem) {
 		case "AND":
-			currState.components.add(new AndGate((event.getX() - (event.getX() % 10)),
-					(event.getY() - (event.getY() % 10)), 0, this, 2));
+			currState.components.add(new AndGate((mouseEventX - (mouseEventX % 10)),
+					(mouseEventY - (mouseEventY % 10)), 0, this, 2));
 			break;
 		case "OR":
 			currState.components.add(
-					new OrGate((event.getX() - (event.getX() % 10)), (event.getY() - (event.getY() % 10)), 0, this, 2));
+					new OrGate((mouseEventX - (mouseEventX % 10)), (mouseEventY - (mouseEventY % 10)), 0, this, 2));
 			break;
 		case "NAND":
-			currState.components.add(new NandGate((event.getX() - (event.getX() % 10)),
-					(event.getY() - (event.getY() % 10)), 0, this, 2));
+			currState.components.add(new NandGate((mouseEventX - (mouseEventX % 10)),
+					(mouseEventY - (mouseEventY % 10)), 0, this, 2));
 			break;
 		case "NOR":
-			currState.components.add(new NorGate((event.getX() - (event.getX() % 10)),
-					(event.getY() - (event.getY() % 10)), 0, this, 2));
+			currState.components.add(new NorGate((mouseEventX - (mouseEventX % 10)),
+					(mouseEventY - (mouseEventY % 10)), 0, this, 2));
 			break;
 		case "NOT":
-			currState.components.add(new NotGate((event.getX() - (event.getX() % 10)),
-					(event.getY() - (event.getY() % 10)), 0, this, 2));
+			currState.components.add(new NotGate((mouseEventX - (mouseEventX % 10)),
+					(mouseEventY - (mouseEventY % 10)), 0, this, 2));
 			break;
 		case "IO_IN":
 			//TODO: CHANGE THIS TO ALLOW USER TO CHANGE NAME
-			currState.components.add(new IOPort((event.getX() - (event.getX() % 10)),
-					(event.getY() - (event.getY() % 10)), 0, this, "in", "temp"));
+			currState.components.add(new IOPort((mouseEventX - (mouseEventX % 10)),
+					(mouseEventY - (mouseEventY % 10)), 0, this, "in", "temp"));
 			break;
 		case "IO_OUT":
 			//TODO: CHANGE THIS TO ALLOW USER TO CHANGE NAME
-			currState.components.add(new IOPort((event.getX() - (event.getX() % 10)),
-					(event.getY() - (event.getY() % 10)), 0, this, "out", "temp"));
+			currState.components.add(new IOPort((mouseEventX - (mouseEventX % 10)),
+					(mouseEventY - (mouseEventY % 10)), 0, this, "out", "temp"));
 			break;
 		case "IO_BI":
 			//TODO: CHANGE THIS TO ALLOW USER TO CHANGE NAME
-			currState.components.add(new IOPort((event.getX() - (event.getX() % 10)),
-					(event.getY() - (event.getY() % 10)), 0, this, "bi", "temp"));
+			currState.components.add(new IOPort((mouseEventX - (mouseEventX % 10)),
+					(mouseEventY - (mouseEventY % 10)), 0, this, "bi", "temp"));
 			break;
 		default:
 			System.err.println("This is not a valid component ID: " + selectedItem);
@@ -545,7 +521,6 @@ public class Schematic extends Canvas {
 	 * @param endingPointOpen Boolean for making the ending point open.
 	 */
 	public void createWire(boolean avoidCreatingWire) {
-		// TODO: improve this to make it easier to use
 		Wire tempWire = new Wire();
 
 		double tempStartX = Math.round((float) wireStartX / 10) * 10 - 1;
@@ -604,10 +579,12 @@ public class Schematic extends Canvas {
 	 * @param two The second wire. This instance's wires gets copied to the first wire and this instance is removed.
 	 */
 	public void combineWires(Wire one, Wire two) {
-		for(Line line : two.lines) {
+		if(one != two) {
+			for(Line line : two.lines) {
 			one.addLine(line);
+			}
+			currState.wires.remove(two);
 		}
-		currState.wires.remove(two);
 	}
 	
 	/*
@@ -648,11 +625,19 @@ public class Schematic extends Canvas {
 		double tempEndY = (Math.round((float) wireEndY / 10) * 10) - 1;
 
 		if (wireDirection == 0) {
+			// left/right direction for the beginning line
 			gc.strokeLine(tempStartX, tempStartY, tempEndX, tempStartY);
 			gc.strokeLine(tempEndX, tempStartY, tempEndX, tempEndY);
+			if(tempStartX == tempEndX && tempStartY != tempEndY) {
+				wireDirection = 1;
+			}
 		} else {
+			// up/down direction  for the beginning line
 			gc.strokeLine(tempStartX, tempStartY, tempStartX, tempEndY);
 			gc.strokeLine(tempStartX, tempEndY, tempEndX, tempEndY);
+			if(tempStartY == tempEndY && tempStartX != tempEndX) {
+				wireDirection = 0;
+			}
 		}
 	}
 	
@@ -660,7 +645,14 @@ public class Schematic extends Canvas {
 	 * Starts a line.
 	 * @param e the event that initiated the start of the line.
 	 */
-	public void startLine(MouseEvent e) {
+	public void startLine(MouseEvent e, WireStartLocation wStartLoc ) {
+		if(wStartLoc == WireStartLocation.COMPONENT) {
+			for(Wire wire : currState.wires) {
+				if(wire.valueDeterminingComponent == valueDeterminingComponent) {
+					wireToBeAddedTo = wire;
+				}
+			}
+		}
 		wireStartX = e.getX();
 		wireStartY = e.getY();
 		wireStarted = true;
@@ -670,7 +662,7 @@ public class Schematic extends Canvas {
 	 * Undoes a previous action. Goes back to a previous schematic state.
 	 */
 	public void undo() {
-		// TODO: Figure it out
+		// TODO: Fix this to allow undoing wire changes... Because that doesn't really work all too well.
 		if (pastStates.size() > 0) {
 			clear(false);
 			currState = new SchematicState(pastStates.removeFirst());

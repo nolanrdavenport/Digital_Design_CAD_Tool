@@ -94,7 +94,7 @@ public class Wire implements Cloneable {
 					if (numSame >= 3) {
 						double x = 0;
 						double y = 0;
-						if (line1.x1 == line2.x1 || line1.x1 == line2.x2) {
+						if ((line1.x1 == line2.x1 && line1.y1 == line2.y1) || (line1.x1 == line2.x2 && line1.y1 == line2.y2)) {
 							x = line1.x1;
 							y = line1.y1;
 						} else {

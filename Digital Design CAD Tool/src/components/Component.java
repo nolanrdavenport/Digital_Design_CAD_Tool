@@ -3,6 +3,8 @@
  */
 package components;
 
+import com.sun.javafx.geom.Vec2d;
+
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
@@ -10,7 +12,7 @@ import javafx.scene.paint.Color;
 
 public abstract class Component implements Cloneable{
 	// Component information.
-	public double xPos, yPos;
+	public Vec2d location;
 	public int rotation; // options: "right = 0", "down = 1", "left = 2", "up = 3"
 	public String id;
 	public Image[] images = new Image[4];
@@ -21,19 +23,28 @@ public abstract class Component implements Cloneable{
 	public boolean[] inputs;
 	public boolean output;
 	public int width, height;
+	public Vec2d outputLocation;
+	public Vec2d[] inputLocations;
 
 	// Constructor.
 	public Component(int width, int height, double xPos, double yPos, int rotation, Canvas canvas, int numInputs) {
 		this.width = width;
 		this.height = height;
-		this.xPos = xPos;
-		this.yPos = yPos;
 		this.rotation = rotation;
 		this.selected = false;
 		this.canvas = canvas;
 		this.numInputs = numInputs;
 		
 		inputs = new boolean[numInputs];
+		
+		// Location vectors
+		location = new Vec2d(xPos, yPos);
+		outputLocation = new Vec2d();
+		inputLocations = new Vec2d[numInputs];
+		for(int i = 0; i < numInputs; i++) {
+			inputLocations[i] = new Vec2d();
+		}
+		calculateLocations();
 	}
 	
 	// Allows for shallow copy of the component.
@@ -43,26 +54,11 @@ public abstract class Component implements Cloneable{
 
 	// Checks if a mouse click is inside the bounds of the component.
 	public boolean insideBounds(double mouseX, double mouseY) {
-		if (mouseX > xPos && mouseX < xPos + currImage.getWidth() && mouseY > yPos && mouseY < yPos + currImage.getHeight()) {
+		if (mouseX > location.x && mouseX < location.x + currImage.getWidth() && mouseY > location.y && mouseY < location.y + currImage.getHeight()) {
 			return true;
 		}else {
 			return false;
 		}
-	}
-
-	
-	// Getters and setters.
-	public void setX(double x) {
-		xPos = x;
-	}
-	public void setY(double y) {
-		yPos = y;
-	}
-	public double getX() {
-		return xPos;
-	}
-	public double getY() {
-		return yPos;
 	}
 	
 	/*
@@ -70,10 +66,10 @@ public abstract class Component implements Cloneable{
 	 * @param gc The graphics context of the canvas that is to be drawn on.
 	 */
 	public void drawComponent(GraphicsContext gc) {
-		gc.drawImage(images[rotation], (xPos - (xPos % 10)), (yPos - (yPos % 10)));
+		gc.drawImage(images[rotation], (location.x - (location.x % 10)), (location.y - (location.y % 10)));
 		if (this.selected == true) {
 			gc.setStroke(Color.WHITE);
-			gc.strokeRect((xPos - (xPos % 10)), (yPos - (yPos % 10)), currImage.getWidth(), currImage.getHeight());
+			gc.strokeRect((location.x - (location.x % 10)), (location.y - (location.y % 10)), currImage.getWidth(), currImage.getHeight());
 		}
 	}
 	
@@ -88,14 +84,80 @@ public abstract class Component implements Cloneable{
 		}
 		
 		currImage = images[rotation];
+		
+		calculateLocations();
 	}
 	
 	/*
 	 * Squares the component to the grid.
 	 */
 	public void square() {
-		xPos = xPos - (xPos % 10);
-		yPos = yPos - (yPos % 10);
+		location.x = location.x - (location.x % 10);
+		location.y = location.y - (location.y % 10);
+		calculateLocations();
+	}
+	
+	/*
+	 * Uses the location vector to calculate the inputs and output location vectors.
+	 */
+	public void calculateLocations() {
+		System.out.println("calculated locations... ");
+		System.out.println("Location: " + location.x + ", " + location.y);
+		System.out.println("Output Location: " + outputLocation.x + ", " + outputLocation.y);
+		switch(rotation) {
+			case 0:
+				outputLocation.x = location.x + (2 * width);
+				outputLocation.y = location.y + height;
+				for(int i = 0, j = 20; i < numInputs; j += 40, i++) {
+					inputLocations[i].x = location.x;
+					inputLocations[i].y = location.y + j;
+				}
+				break;
+			case 1:
+				outputLocation.x = location.x + height;
+				outputLocation.y = location.y + (2 * width);
+				
+				for(int i = 0, j = 20; i < numInputs; j += 40, i++) {
+					inputLocations[i].x = location.x + j;
+					inputLocations[i].y = location.y;
+				}
+				break;
+			case 2:
+				outputLocation.x = location.x;
+				outputLocation.y = location.y + height;
+				
+				for(int i = 0, j = 20; i < numInputs; j += 40, i++) {
+					inputLocations[i].x = location.x + (2 * width);
+					inputLocations[i].y = location.y + j;
+				}
+				break;
+			case 3:
+				outputLocation.x = location.x + height;
+				outputLocation.y = location.y;
+				
+				for(int i = 0, j = 20; i < numInputs; j += 40, i++) {
+					inputLocations[i].x = location.x + j;
+					inputLocations[i].y = location.y + (2 * width);
+				}
+				break;
+			default:
+				System.err.println("That is an invalid rotation value");
+		}
+	}
+	
+	public double getX() {
+		return location.x;
+	}
+	public double getY() {
+		return location.y;
+	}
+	public void setX(double x) {
+		location.x = x;
+		//calculateLocations();
+	}
+	public void setY(double y) {
+		location.y = y;
+		//calculateLocations();
 	}
 
 }

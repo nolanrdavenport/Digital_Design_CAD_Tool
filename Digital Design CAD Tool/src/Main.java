@@ -4,6 +4,10 @@
  * Nolan Davenport
  * Computer Engineering student at The University of Texas at Dallas. 
  */
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
@@ -235,6 +239,9 @@ public class Main extends Application {
 		Menu helpMenu = new Menu("Help");
 		MenuItem aboutItem = new MenuItem("About");
 		helpMenu.getItems().add(aboutItem);
+		aboutItem.setOnAction(e -> {
+			openAboutTab();
+		});
 
 		// Create menu bar and add menus to it
 		MenuBar menuBar = new MenuBar();
@@ -334,7 +341,6 @@ public class Main extends Application {
 	 * @param grid The grid that holds the tools.
 	 */
 	public void setupToolTab(GridPane grid) {
-		//TODO: Finish this method
 		Image selectImage = new Image("Images/Select.png", 40, 40, false, false);
 		Button selectButton = new Button();
 		selectButton.setOnAction(e -> {
@@ -392,5 +398,25 @@ public class Main extends Application {
 	 */
 	public void openNewSchematicWindow() {
 		new NewSchematicWindow(this);
+	}
+	
+	/*
+	 * Opens the about tab.
+	 */
+	public void openAboutTab() {
+		TextArea aboutText = new TextArea();
+		try {
+			BufferedReader reader = new BufferedReader(new FileReader(new File("Information/About.txt")));
+			String line;
+			while((line = reader.readLine()) != null) {
+				aboutText.appendText(line + "\n");
+			}
+			aboutText.setEditable(false);
+		}catch(IOException e) {
+			e.printStackTrace();
+		}
+		Tab aboutTab = new Tab("About", aboutText);
+		tabPane.getTabs().add(aboutTab);
+		tabPane.getSelectionModel().select(aboutTab);
 	}
 }
