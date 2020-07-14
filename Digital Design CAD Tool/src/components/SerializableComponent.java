@@ -15,26 +15,32 @@
  *      along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 package components;
-import components.Component;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.image.Image;
-public class OrGate extends Component{
-	public OrGate(int width, int height, double xPos, double yPos, int rotation, int numInputs, int ID) {
-		super(60, 40, xPos, yPos, rotation, numInputs, ID);
-		inputs = new boolean[numInputs];
+
+import java.io.Serializable;
+
+public class SerializableComponent implements Serializable{
+	private static final long serialVersionUID = 3025588903980672847L;
+	public double xPos;
+	public double yPos;
+	public int rotation; // options: "right = 0", "down = 1", "left = 2", "up = 3"
+	public String id;
+	public int numInputs;
+	public boolean[] inputs;
+	public boolean output;
+	public int width, height;
+	public int ID;
+	
+	public SerializableComponent(double xPos, double yPos, int rotation, String id, int numInputs, boolean[] inputs, boolean output, int width, int height, int ID) {
+		this.xPos = xPos;
+		this.yPos = yPos;
+		this.rotation = rotation;
+		this.id = id;
 		this.numInputs = numInputs;
-		this.id = "OR";
-		for(int i = 0; i < this.images.length; i++) {
-			images[i] = new Image("Images/OR/OR_"+i+".png",120,120,true,false);
-		}
-		this.currImage = images[0];
+		this.inputs = inputs;
+		this.output = output;
+		this.width = width;
+		this.height = height;
+		this.ID = ID;
 	}
-	public void setOutput(){
-		output = false;
-		for(boolean input : inputs) {
-			if(input == true) { 
-				output = true;
-			}
-		}
-	}
+	
 }

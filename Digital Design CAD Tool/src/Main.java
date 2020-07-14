@@ -57,8 +57,10 @@ public class Main extends Application {
 	public Scene scene;
 	public String selectedItem = "NONE";
 	public ArrayList<Schematic> schematics;
+	public Schematic currSchematic;
 	public Schematic selectedSchematic;
 	public TabPane controlTabPane;
+	public FileManager fileManager;
 	
 	public static void main(String[] args) {
 		Application.launch(args);
@@ -69,9 +71,11 @@ public class Main extends Application {
 	 */
 	@Override
 	public void start(Stage primaryStage) throws Exception {
+		// File manager initialization
+		fileManager = new FileManager(this, primaryStage);
 		// Holds a list of all open schematics
 		schematics = new ArrayList<Schematic>();
-		
+				
 		// Setup the application layout and other general setup
 		primaryStage.setTitle("Digital Design CAD Tool");
 		MenuBar menuBar = setupMenuBar();
@@ -134,6 +138,17 @@ public class Main extends Application {
 				splitPane.setPrefHeight(primaryStage.getHeight());
 			}
 		});
+		
+		tabPane.getSelectionModel().selectedItemProperty().addListener(
+			    new ChangeListener<Tab>() {
+			        @Override
+			        public void changed(ObservableValue<? extends Tab> ov, Tab t, Tab t1) {
+			        	if(tabPane.getSelectionModel().getSelectedItem().getContent() instanceof Schematic) {
+			        		currSchematic = (Schematic) tabPane.getSelectionModel().getSelectedItem().getContent();
+			        	}
+			        }
+			    }
+		);
 
 		// Finalize stage initialization and show stage
 		primaryStage.setMaximized(true);
@@ -182,9 +197,15 @@ public class Main extends Application {
 		newMenu.getItems().add(schematicItem);
 		newMenu.getItems().add(truthTableItem);
 		MenuItem openFileItem = new MenuItem("Open File...");
+		openFileItem.setOnAction(e -> {
+			fileManager.openSchematicFile();
+		});
 		MenuItem closeItem = new MenuItem("Close");
 		MenuItem saveItem = new MenuItem("Save");
 		MenuItem saveAsItem = new MenuItem("Save As...");
+		saveAsItem.setOnAction(e -> {
+			fileManager.saveSchematicFile();
+		});
 		fileMenu.getItems().add(newMenu);
 		fileMenu.getItems().add(openFileItem);
 		fileMenu.getItems().add(closeItem);
@@ -311,6 +332,15 @@ public class Main extends Application {
 		norButton.setGraphic(new ImageView(norImage));
 		grid.add(norButton, 1, 1, 1, 1);
 		
+		Image xorImage = new Image("Images/XOR/XOR_image.png", 60, 40, false, false);
+		Button xorButton = new Button();
+		xorButton.setOnAction(e -> {
+			selectedItem = "XOR";
+			scene.setCursor(Cursor.CROSSHAIR);
+		});
+		xorButton.setGraphic(new ImageView(xorImage));
+		grid.add(xorButton, 0, 2, 1, 1);
+		
 		Image notImage = new Image("Images/NOT/NOT_image.png", 60, 40, false, false);
 		Button notButton = new Button();
 		notButton.setOnAction(e -> {
@@ -318,7 +348,7 @@ public class Main extends Application {
 			scene.setCursor(Cursor.CROSSHAIR);
 		});
 		notButton.setGraphic(new ImageView(notImage));
-		grid.add(notButton, 0, 2, 1, 1);
+		grid.add(notButton, 1, 2, 1, 1);
 		
 		Image inputPortImage = new Image("Images/IOPort/in/IO_IN_image.png", 60, 40, false, false);
 		Button inputPortButton = new Button();
@@ -327,7 +357,7 @@ public class Main extends Application {
 			scene.setCursor(Cursor.CROSSHAIR);
 		});
 		inputPortButton.setGraphic(new ImageView(inputPortImage));
-		grid.add(inputPortButton, 1, 2, 1, 1);
+		grid.add(inputPortButton, 0, 3, 1, 1);
 		
 		Image outputPortImage = new Image("Images/IOPort/out/IO_OUT_image.png", 60, 40, false, false);
 		Button outputPortButton = new Button();
@@ -336,7 +366,7 @@ public class Main extends Application {
 			scene.setCursor(Cursor.CROSSHAIR);
 		});
 		outputPortButton.setGraphic(new ImageView(outputPortImage));
-		grid.add(outputPortButton, 0, 3, 1, 1);
+		grid.add(outputPortButton, 1, 3, 1, 1);
 		
 		Image biPortImage = new Image("Images/IOPort/bi/IO_BI_image.png", 60, 40, false, false);
 		Button biPortButton = new Button();
@@ -345,7 +375,7 @@ public class Main extends Application {
 			scene.setCursor(Cursor.CROSSHAIR);
 		});
 		biPortButton.setGraphic(new ImageView(biPortImage));
-		grid.add(biPortButton, 1, 3, 1, 1);
+		grid.add(biPortButton, 0, 4, 1, 1);
 		
 		ScrollPane componentScrollPane = new ScrollPane(grid);
 		Tab componentTab = new Tab("Components", componentScrollPane);
@@ -400,12 +430,13 @@ public class Main extends Application {
 	 * @param height Height of the schematic.
 	 */
 	public void createSchematic(String name, int width, int height) {
-		Schematic schematic = new Schematic(this, tabPane, width, height);
+		Schematic schematic = new Schematic(this, tabPane, width, height, name);
 		Tab newSchematic = new Tab(name, schematic);
 		tabPane.getTabs().add(newSchematic);
 		tabPane.getSelectionModel().select(newSchematic);
 		
 		schematics.add(schematic);
+		currSchematic = schematic;
 
 	}
 	

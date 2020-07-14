@@ -20,8 +20,10 @@
 import components.Component;
 import components.Wire;
 
+import java.io.Serializable;
 import java.util.ArrayList;
-public class SchematicState {
+public class SchematicState implements Serializable{
+	private static final long serialVersionUID = 676096957550284174L;
 	// Holds the component and wire data.
 	public ArrayList<Component> components;
 	public ArrayList<Wire> wires;

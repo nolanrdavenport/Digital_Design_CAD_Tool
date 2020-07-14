@@ -18,6 +18,7 @@
  *      along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedList;
@@ -34,13 +35,16 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 
-public class Schematic extends Canvas {
+public class Schematic extends Canvas implements Serializable{
+	private static final long serialVersionUID = -1671532202546307968L;
 	// General variables
 	public int width, height;
 	public int scale = 1;
 	public GraphicsContext gc;
 	public TabPane tabPane;
 	public Main main;
+	public String name;
+	public ArrayList<Integer> IDs;
 
 	// For dragging the viewport around
 	private double mouseX;
@@ -80,13 +84,15 @@ public class Schematic extends Canvas {
 	/*
 	 * Schematic constructor. Creates and initializes instances of the schematic class.
 	 */
-	public Schematic(Main main, TabPane tabPane, int width, int height) {
+	public Schematic(Main main, TabPane tabPane, int width, int height, String name) {
 		// initialization
 		super(width, height);
 		currState = new SchematicState();
 		pastStates = new LinkedList<SchematicState>();
 		futureStates = new LinkedList<SchematicState>();
 		lastState = new SchematicState(currState);
+		IDs = new ArrayList<Integer>();
+		this.name = name;
 		this.tabPane = tabPane;
 		this.height = height;
 		this.width = width;
@@ -161,8 +167,8 @@ public class Schematic extends Canvas {
 					}
 					if(foundComponent) break;
 					if(Math.abs(mouseEventX - comp.outputLocation.x) <= wireDetectionThreshold && Math.abs(mouseEventY - comp.outputLocation.y) <= wireDetectionThreshold) {
-						valueDeterminingComponent = comp;
 						startLine(event, WireStartLocation.COMPONENT);
+						valueDeterminingComponent = comp;
 						foundComponent = true;
 						break;
 					}
@@ -449,41 +455,46 @@ public class Schematic extends Canvas {
 		double mouseEventX = event.getX();
 		double mouseEventY = event.getY();
 		
+		// TODO: This just sets the ID to 0, but I need to make a custom ID generator that makes unique IDs.
 		switch (selectedItem) {
 		case "AND":
-			currState.components.add(new AndGate((mouseEventX - (mouseEventX % 10)),
-					(mouseEventY - (mouseEventY % 10)), 0, this, 2));
+			currState.components.add(new AndGate(0, 0, (mouseEventX - (mouseEventX % 10)),
+					(mouseEventY - (mouseEventY % 10)), 0, 2, 0));
 			break;
 		case "OR":
 			currState.components.add(
-					new OrGate((mouseEventX - (mouseEventX % 10)), (mouseEventY - (mouseEventY % 10)), 0, this, 2));
+					new OrGate(0, 0, (mouseEventX - (mouseEventX % 10)), (mouseEventY - (mouseEventY % 10)), 0, 2, 0));
 			break;
 		case "NAND":
-			currState.components.add(new NandGate((mouseEventX - (mouseEventX % 10)),
-					(mouseEventY - (mouseEventY % 10)), 0, this, 2));
+			currState.components.add(new NandGate(0, 0, (mouseEventX - (mouseEventX % 10)),
+					(mouseEventY - (mouseEventY % 10)), 0, 2, 0));
 			break;
 		case "NOR":
-			currState.components.add(new NorGate((mouseEventX - (mouseEventX % 10)),
-					(mouseEventY - (mouseEventY % 10)), 0, this, 2));
+			currState.components.add(new NorGate(0, 0, (mouseEventX - (mouseEventX % 10)),
+					(mouseEventY - (mouseEventY % 10)), 0, 2, 0));
+			break;
+		case "XOR":
+			currState.components.add(new XorGate(0, 0, (mouseEventX - (mouseEventX % 10)),
+					(mouseEventY - (mouseEventY % 10)), 0, 2, 0));
 			break;
 		case "NOT":
-			currState.components.add(new NotGate((mouseEventX - (mouseEventX % 10)),
-					(mouseEventY - (mouseEventY % 10)), 0, this, 2));
+			currState.components.add(new NotGate(0, 0, (mouseEventX - (mouseEventX % 10)),
+					(mouseEventY - (mouseEventY % 10)), 0, 2, 0));
 			break;
 		case "IO_IN":
 			//TODO: CHANGE THIS TO ALLOW USER TO CHANGE NAME
 			currState.components.add(new IOPort((mouseEventX - (mouseEventX % 10)),
-					(mouseEventY - (mouseEventY % 10)), 0, this, "in", "temp"));
+					(mouseEventY - (mouseEventY % 10)), 0, 0, "in", "temp"));
 			break;
 		case "IO_OUT":
 			//TODO: CHANGE THIS TO ALLOW USER TO CHANGE NAME
 			currState.components.add(new IOPort((mouseEventX - (mouseEventX % 10)),
-					(mouseEventY - (mouseEventY % 10)), 0, this, "out", "temp"));
+					(mouseEventY - (mouseEventY % 10)), 0, 0, "out", "temp"));
 			break;
 		case "IO_BI":
 			//TODO: CHANGE THIS TO ALLOW USER TO CHANGE NAME
 			currState.components.add(new IOPort((mouseEventX - (mouseEventX % 10)),
-					(mouseEventY - (mouseEventY % 10)), 0, this, "bi", "temp"));
+					(mouseEventY - (mouseEventY % 10)), 0, 0, "bi", "temp"));
 			break;
 		default:
 			System.err.println("This is not a valid component ID: " + selectedItem);
@@ -564,7 +575,7 @@ public class Schematic extends Canvas {
 		if (wireToBeAddedTo != null) {
 			if(wireToBeAddedTo.valueDeterminingComponent != null && valueDeterminingComponent != null && (wireToBeAddedTo.valueDeterminingComponent != valueDeterminingComponent)) {
 				wireError(0);
-			}else if(wireToBeAddedTo.valueDeterminingComponent == null || !avoidCreatingWire) {
+			}else if(wireToBeAddedTo.valueDeterminingComponent == null && !avoidCreatingWire) {
 				wireToBeAddedTo.addLine(line1);
 				wireToBeAddedTo.addLine(line2);
 				wireToBeAddedTo.valueDeterminingComponent = valueDeterminingComponent;

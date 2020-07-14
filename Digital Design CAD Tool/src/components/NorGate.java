@@ -19,8 +19,8 @@ import components.Component;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.image.Image;
 public class NorGate extends Component{
-	public NorGate(double xPos, double yPos, int rotation, Canvas canvas, int numInputs) {
-		super(60, 40, xPos, yPos, rotation, canvas, numInputs);
+	public NorGate(int width, int height, double xPos, double yPos, int rotation, int numInputs, int ID) {
+		super(60, 40, xPos, yPos, rotation, numInputs, ID);
 		inputs = new boolean[numInputs];
 		this.numInputs = numInputs;
 		this.id = "NOR";

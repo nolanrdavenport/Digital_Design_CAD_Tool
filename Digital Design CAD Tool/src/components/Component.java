@@ -21,20 +21,20 @@ package components;
 
 import com.sun.javafx.geom.Vec2d;
 
-import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 
 public abstract class Component implements Cloneable{
+	
 	// Component information.
+	public int ID; // unique identifier for this component. Used for rebuilding circuit from file. 
 	public Vec2d location;
 	public int rotation; // options: "right = 0", "down = 1", "left = 2", "up = 3"
 	public String id;
 	public Image[] images = new Image[4];
 	public Image currImage;
 	public boolean selected;
-	public Canvas canvas;
 	public int numInputs;
 	public boolean[] inputs;
 	public boolean output;
@@ -43,12 +43,11 @@ public abstract class Component implements Cloneable{
 	public Vec2d[] inputLocations;
 
 	// Constructor.
-	public Component(int width, int height, double xPos, double yPos, int rotation, Canvas canvas, int numInputs) {
+	public Component(int width, int height, double xPos, double yPos, int rotation, int numInputs, int ID) {
 		this.width = width;
 		this.height = height;
 		this.rotation = rotation;
 		this.selected = false;
-		this.canvas = canvas;
 		this.numInputs = numInputs;
 		
 		inputs = new boolean[numInputs];
@@ -117,9 +116,6 @@ public abstract class Component implements Cloneable{
 	 * Uses the location vector to calculate the inputs and output location vectors.
 	 */
 	public void calculateLocations() {
-		System.out.println("calculated locations... ");
-		System.out.println("Location: " + location.x + ", " + location.y);
-		System.out.println("Output Location: " + outputLocation.x + ", " + outputLocation.y);
 		switch(rotation) {
 			case 0:
 				outputLocation.x = location.x + (2 * width);
@@ -176,4 +172,7 @@ public abstract class Component implements Cloneable{
 		//calculateLocations();
 	}
 
+	public SerializableComponent getSerializableComponent() {
+		return new SerializableComponent(location.x, location.y, rotation, id, numInputs, inputs, output, width, height, ID);
+	}
 }

@@ -25,13 +25,14 @@ package components;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.image.Image;
 
+// TODO: make ioports savable
 public class IOPort extends Component{
 	// Options are: "in", "out", or "bi", for input, output and bidirectional.
 	public String direction = null;
 	public String name = null;
 	
-	public IOPort(double xPos, double yPos, int rotation, Canvas canvas, String direction, String name) {
-		super(30, 20, xPos, yPos, rotation, canvas, 1);
+	public IOPort(double xPos, double yPos, int rotation, int ID, String direction, String name) {
+		super(30, 20, xPos, yPos, rotation, 1, ID);
 		this.direction = direction;
 		this.name = name;
 		this.id = "IO_"+direction;
