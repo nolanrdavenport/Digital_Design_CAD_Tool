@@ -24,6 +24,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
@@ -63,7 +66,18 @@ public class Main extends Application {
 	public FileManager fileManager;
 	
 	public static void main(String[] args) {
-		Application.launch(args);
+		// Application setup
+		File programFile = new File(System.getenv("ProgramFiles") + "\\Digital Design CAD Tool\\");
+		if(!programFile.exists()) {
+			programFile.mkdir();
+			File schematicsFolder = new File(System.getenv("ProgramFiles") + "\\Digital Design CAD Tool\\Schematics");
+			schematicsFolder.mkdir();
+			File informationFolder = new File(System.getenv("ProgramFiles") + "\\Digital Design CAD Tool\\Information");
+			informationFolder.mkdir();
+			Application.launch(args);
+		}else {
+			Application.launch(args);
+		}
 	}
 	
 	/*
