@@ -63,7 +63,7 @@ public class FileManager{
 			currFile = tempFile;
 			
 			// Pull the schematic information
-			BufferedReader metadataReader = new BufferedReader(new FileReader(new File("./Schematics/metadata/"+currFile.getName().substring(0, currFile.getName().length() - 4)+".metadata")));
+			BufferedReader metadataReader = new BufferedReader(new FileReader(new File("./Schematics/.metadata/"+currFile.getName().substring(0, currFile.getName().length() - 4)+".metadata")));
 			int width = Integer.parseInt(metadataReader.readLine());
 			int height = Integer.parseInt(metadataReader.readLine());
 			int numComponents = Integer.parseInt(metadataReader.readLine());
@@ -78,57 +78,16 @@ public class FileManager{
 			// TODO: make inputs and outputs work with file system.
 			for(int i = 0; i < numComponents; i++) {
 				SerializableComponent temp = (SerializableComponent)ois.readObject();
-				//new Component(temp.width, temp.height, temp.xPos, temp.yPos, temp.rotation, temp.numInputs);
-				switch (temp.id) {
-				case "AND":
-					main.currSchematic.currState.components.add(new AndGate(temp.width, temp.height, temp.xPos, temp.yPos, temp.rotation, temp.numInputs, temp.ID));
-					break;
-				case "OR":
-					main.currSchematic.currState.components.add(
-							new OrGate(temp.width, temp.height, temp.xPos, temp.yPos, temp.rotation, temp.numInputs, temp.ID));
-					break;
-				case "NAND":
-					main.currSchematic.currState.components.add(new NandGate(temp.width, temp.height, temp.xPos, temp.yPos, temp.rotation, temp.numInputs, temp.ID));
-					break;
-				case "NOR":
-					main.currSchematic.currState.components.add(new NorGate(temp.width, temp.height, temp.xPos, temp.yPos, temp.rotation, temp.numInputs, temp.ID));
-					break;
-				case "XOR":
-					main.currSchematic.currState.components.add(new XorGate(temp.width, temp.height, temp.xPos, temp.yPos, temp.rotation, temp.numInputs, temp.ID));
-					break;
-				case "NOT":
-					main.currSchematic.currState.components.add(new NotGate(temp.width, temp.height, temp.xPos, temp.yPos, temp.rotation, temp.numInputs, temp.ID));
-					break;
-				case "IO_IN":
-					//TODO: CHANGE THIS TO ALLOW USER TO CHANGE NAME
-					//currState.components.add(new IOPort((mouseEventX - (mouseEventX % 10)),
-					//		(mouseEventY - (mouseEventY % 10)), 0, "in", "temp"));
-					break;
-				case "IO_OUT":
-					//TODO: CHANGE THIS TO ALLOW USER TO CHANGE NAME
-					//currState.components.add(new IOPort((mouseEventX - (mouseEventX % 10)),
-					//		(mouseEventY - (mouseEventY % 10)), 0, "out", "temp"));
-					break;
-				case "IO_BI":
-					//TODO: CHANGE THIS TO ALLOW USER TO CHANGE NAME
-					//currState.components.add(new IOPort((mouseEventX - (mouseEventX % 10)),
-					//		(mouseEventY - (mouseEventY % 10)), 0, "bi", "temp"));
-					break;
-				default:
-					System.err.println("The component id is invalid for a component in the save file.");
-				}
-				
+				main.currSchematic.currState.components.add(temp.getDeserializedComponent());
+								
 			}
 			
 			for(int i = 0; i < numWires; i++) {
 				SerializableWire temp = (SerializableWire)ois.readObject();
-				Wire wire = new Wire();
-				wire.lines = temp.lines;
+				main.currSchematic.currState.wires.add(temp.getDeserializedWire(main.currSchematic.currState.components));
 			}
-			// TODO: Make it to where you can read the whole schematic
-			Line testLine = (Line) ois.readObject();
 			
-			System.out.println(testLine.x2);
+			main.currSchematic.refresh(true);
 			
 			fis.close();
 			ois.close();
@@ -157,8 +116,10 @@ public class FileManager{
 				files.add(currFile);
 			}
 			
+			File metaDir = new File("Schematics/.metadata/");
+			metaDir.mkdirs();
 			// Write the meta data for the file into the metadata folder.
-			BufferedWriter metaDataWriter = new BufferedWriter(new FileWriter(new File("./Schematics/metadata/"+currFile.getName().substring(0, currFile.getName().length() - 4)+".metadata")));
+			BufferedWriter metaDataWriter = new BufferedWriter(new FileWriter(new File("./Schematics/.metadata/"+currFile.getName().substring(0, currFile.getName().length() - 4)+".metadata")));
 			metaDataWriter.write(Integer.toString(main.currSchematic.width)); // width
 			metaDataWriter.newLine();
 			metaDataWriter.write(Integer.toString(main.currSchematic.height)); // height

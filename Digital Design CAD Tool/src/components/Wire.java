@@ -178,4 +178,5 @@ public class Wire implements Cloneable{
 	public SerializableWire getSerializableWire() {
 		return new SerializableWire(lines, valueDeterminingComponent);
 	}
+
 }

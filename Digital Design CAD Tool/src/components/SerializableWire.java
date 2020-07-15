@@ -1,4 +1,6 @@
-/*   	This is the Digital Design CAD Tool. This tool is used to design digital circuits.
+/* This class creates a serializable object that holds all necessary information to instantiate a wire. 
+ * 
+ *    	This is the Digital Design CAD Tool. This tool is used to design digital circuits.
  *      Copyright (C) 2020  Nolan Davenport
  *
  *      This program is free software: you can redistribute it and/or modify
@@ -19,6 +21,8 @@ package components;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import javafx.application.Application;
+
 public class SerializableWire implements Serializable{
 	private static final long serialVersionUID = 644962249459735287L;
 	
@@ -27,5 +31,21 @@ public class SerializableWire implements Serializable{
 	public SerializableWire(ArrayList<Line> lines, Component valueDeterminingComponent) {
 		this.lines = lines;
 		this.valueDeterminingComponent = valueDeterminingComponent.getSerializableComponent();
+	}
+	
+	/*
+	 * Creates a wire instance based on the data stored in this object. This is used for instantiating objects that were saved onto a file.
+	 */
+	public Wire getDeserializedWire(ArrayList<Component> components) {
+		Wire wire = new Wire();
+		wire.lines = lines;
+		
+		for(Component comp : components) {
+			if(comp.ID == valueDeterminingComponent.ID) {
+				wire.valueDeterminingComponent = comp;
+			}
+		}
+		
+		return wire;
 	}
 }

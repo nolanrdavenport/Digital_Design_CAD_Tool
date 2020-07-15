@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedList;
+import java.util.Random;
 
 import com.sun.javafx.geom.Vec2d;
 
@@ -459,27 +460,27 @@ public class Schematic extends Canvas implements Serializable{
 		switch (selectedItem) {
 		case "AND":
 			currState.components.add(new AndGate(0, 0, (mouseEventX - (mouseEventX % 10)),
-					(mouseEventY - (mouseEventY % 10)), 0, 2, 0));
+					(mouseEventY - (mouseEventY % 10)), 0, 2, generateUniqueID()));
 			break;
 		case "OR":
 			currState.components.add(
-					new OrGate(0, 0, (mouseEventX - (mouseEventX % 10)), (mouseEventY - (mouseEventY % 10)), 0, 2, 0));
+					new OrGate(0, 0, (mouseEventX - (mouseEventX % 10)), (mouseEventY - (mouseEventY % 10)), 0, 2, generateUniqueID()));
 			break;
 		case "NAND":
 			currState.components.add(new NandGate(0, 0, (mouseEventX - (mouseEventX % 10)),
-					(mouseEventY - (mouseEventY % 10)), 0, 2, 0));
+					(mouseEventY - (mouseEventY % 10)), 0, 2, generateUniqueID()));
 			break;
 		case "NOR":
 			currState.components.add(new NorGate(0, 0, (mouseEventX - (mouseEventX % 10)),
-					(mouseEventY - (mouseEventY % 10)), 0, 2, 0));
+					(mouseEventY - (mouseEventY % 10)), 0, 2, generateUniqueID()));
 			break;
 		case "XOR":
 			currState.components.add(new XorGate(0, 0, (mouseEventX - (mouseEventX % 10)),
-					(mouseEventY - (mouseEventY % 10)), 0, 2, 0));
+					(mouseEventY - (mouseEventY % 10)), 0, 2, generateUniqueID()));
 			break;
 		case "NOT":
 			currState.components.add(new NotGate(0, 0, (mouseEventX - (mouseEventX % 10)),
-					(mouseEventY - (mouseEventY % 10)), 0, 2, 0));
+					(mouseEventY - (mouseEventY % 10)), 0, 2, generateUniqueID()));
 			break;
 		case "IO_IN":
 			//TODO: CHANGE THIS TO ALLOW USER TO CHANGE NAME
@@ -707,5 +708,19 @@ public class Schematic extends Canvas implements Serializable{
 	public void redo() {
 		// TODO: Implement this in the future, but not now. It's not that important
 		// right now to create a functional program.
+	}
+	
+	public int generateUniqueID() {
+		boolean foundUniqueID = false;
+		int ID = 0;
+		Random rand = new Random();
+		while(!foundUniqueID) {
+			ID = rand.nextInt(899999) + 100000; // generates a random number between 100000 and 999999
+			if(!IDs.contains(ID)) {
+				foundUniqueID = true;
+				IDs.add(ID);
+			}
+		}
+		return ID;
 	}
 }
