@@ -63,7 +63,7 @@ public class FileManager{
 			currFile = tempFile;
 			
 			// Pull the schematic information
-			BufferedReader metadataReader = new BufferedReader(new FileReader(new File(System.getenv("ProgramFiles") + "\\Digital Design CAD Tool\\Schematics\\.metadata"+currFile.getName().substring(0, currFile.getName().length() - 4)+".metadata")));
+			BufferedReader metadataReader = new BufferedReader(new FileReader(new File(System.getenv("ProgramFiles") + "\\Digital Design CAD Tool\\Schematics\\.metadata\\"+currFile.getName().substring(0, currFile.getName().length() - 4)+".metadata")));
 			int width = Integer.parseInt(metadataReader.readLine());
 			int height = Integer.parseInt(metadataReader.readLine());
 			int numComponents = Integer.parseInt(metadataReader.readLine());
@@ -124,7 +124,7 @@ public class FileManager{
 			File metaDir = new File(System.getenv("ProgramFiles") + "\\Digital Design CAD Tool\\Schematics\\.metadata");
 			metaDir.mkdirs();
 			// Write the meta data for the file into the metadata folder.
-			BufferedWriter metaDataWriter = new BufferedWriter(new FileWriter(new File(System.getenv("ProgramFiles") + "\\Digital Design CAD Tool\\Schematics\\.metadata"+currFile.getName().substring(0, currFile.getName().length() - 4)+".metadata")));
+			BufferedWriter metaDataWriter = new BufferedWriter(new FileWriter(new File(System.getenv("ProgramFiles") + "\\Digital Design CAD Tool\\Schematics\\.metadata\\"+currFile.getName().substring(0, currFile.getName().length() - 4)+".metadata")));
 			metaDataWriter.write(Integer.toString(main.currSchematic.width)); // width
 			metaDataWriter.newLine();
 			metaDataWriter.write(Integer.toString(main.currSchematic.height)); // height
