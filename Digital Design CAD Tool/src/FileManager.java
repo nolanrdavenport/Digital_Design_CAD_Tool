@@ -67,6 +67,7 @@ public class FileManager{
 			int width = Integer.parseInt(metadataReader.readLine());
 			int height = Integer.parseInt(metadataReader.readLine());
 			int numComponents = Integer.parseInt(metadataReader.readLine());
+			int numIOPorts = Integer.parseInt(metadataReader.readLine());
 			int numWires = Integer.parseInt(metadataReader.readLine());
 			metadataReader.close();
 			
@@ -79,7 +80,11 @@ public class FileManager{
 			for(int i = 0; i < numComponents; i++) {
 				SerializableComponent temp = (SerializableComponent)ois.readObject();
 				main.currSchematic.currState.components.add(temp.getDeserializedComponent());
-								
+			}
+			
+			for(int i = 0; i < numIOPorts; i++) {
+				SerializableIOPort temp = (SerializableIOPort)ois.readObject();
+				main.currSchematic.currState.components.add(temp.getDeserializedIOPort());
 			}
 			
 			for(int i = 0; i < numWires; i++) {
@@ -124,7 +129,19 @@ public class FileManager{
 			metaDataWriter.newLine();
 			metaDataWriter.write(Integer.toString(main.currSchematic.height)); // height
 			metaDataWriter.newLine();
-			metaDataWriter.write(Integer.toString(main.currSchematic.currState.components.size())); // number of components
+			// Calculate num components and num IO ports separately.
+			int compSize = 0;
+			int ioSize = 0;
+			for(Component comp : main.currSchematic.currState.components) {
+				if(!comp.id.contains("IO")) {
+					compSize++;
+				}else {
+					ioSize++;
+				}
+			}
+			metaDataWriter.write(Integer.toString(compSize)); // number of components
+			metaDataWriter.newLine();
+			metaDataWriter.write(Integer.toString(ioSize)); // number of IOPorts
 			metaDataWriter.newLine();
 			metaDataWriter.write(Integer.toString(main.currSchematic.currState.wires.size())); // number of wires
 			metaDataWriter.close();
@@ -135,10 +152,20 @@ public class FileManager{
 			ObjectOutputStream oos = new ObjectOutputStream(fos);
 			
 			for(Component comp : main.currSchematic.currState.components) {
-				oos.writeObject(comp.getSerializableComponent());
+				if(!comp.id.contains("IO")) {
+					oos.writeObject(comp.getSerializableComponent());
+					System.out.println("wrote a component");
+				}
+			}
+			for(Component comp : main.currSchematic.currState.components) {
+				if(comp.id.contains("IO")) {
+					oos.writeObject(((IOPort) comp).getSerializableIOPort());
+					System.out.println("wrote an IOPort");
+				}
 			}
 			for(Wire wire : main.currSchematic.currState.wires) {
 				oos.writeObject(wire.getSerializableWire());
+				System.out.println("wrote a wire");
 			}
 			
 			oos.close();

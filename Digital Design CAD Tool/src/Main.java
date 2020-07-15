@@ -22,8 +22,12 @@
  */
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -72,8 +76,6 @@ public class Main extends Application {
 			programFile.mkdir();
 			File schematicsFolder = new File(System.getenv("ProgramFiles") + "\\Digital Design CAD Tool\\Schematics");
 			schematicsFolder.mkdir();
-			File informationFolder = new File(System.getenv("ProgramFiles") + "\\Digital Design CAD Tool\\Information");
-			informationFolder.mkdir();
 			Application.launch(args);
 		}else {
 			Application.launch(args);
@@ -166,7 +168,7 @@ public class Main extends Application {
 
 		// Finalize stage initialization and show stage
 		primaryStage.setMaximized(true);
-		scene.getStylesheets().add("Styles/primary_style.css");
+		scene.getStylesheets().add("/Styles/primary_style.css");
 		primaryStage.setScene(scene);
 		primaryStage.show();
 		
@@ -309,8 +311,10 @@ public class Main extends Application {
 	 * Sets up the component tab.
 	 * @param grid The grid pane that holds the components.
 	 */
-	public void setupComponentTab(GridPane grid) {
-		Image andImage = new Image("./Images/AND/AND_image.png", 60, 40, false, false);
+	public void setupComponentTab(GridPane grid) throws ClassNotFoundException {
+		@SuppressWarnings("rawtypes")
+		Class cls = Class.forName("Main");
+		Image andImage = new Image(cls.getResourceAsStream("Images/AND/AND_image.png"), 60, 40, false, false);
 		Button andButton = new Button();
 		andButton.setOnAction(e -> {
 			selectedItem = "AND";
@@ -319,7 +323,7 @@ public class Main extends Application {
 		andButton.setGraphic(new ImageView(andImage));
 		grid.add(andButton, 0, 0, 1, 1);
 
-		Image orImage = new Image("./Images/OR/OR_image.png", 60, 40, false, false);
+		Image orImage = new Image(cls.getResourceAsStream("Images/OR/OR_image.png"), 60, 40, false, false);
 		Button orButton = new Button();
 		orButton.setOnAction(e -> {
 			selectedItem = "OR";
@@ -328,7 +332,7 @@ public class Main extends Application {
 		orButton.setGraphic(new ImageView(orImage));
 		grid.add(orButton, 1, 0, 1, 1);
 		
-		Image nandImage = new Image("./Images/NAND/NAND_image.png", 60, 40, false, false);
+		Image nandImage = new Image(cls.getResourceAsStream("Images/NAND/NAND_image.png"), 60, 40, false, false);
 		Button nandButton = new Button();
 		nandButton.setOnAction(e -> {
 			selectedItem = "NAND";
@@ -337,7 +341,7 @@ public class Main extends Application {
 		nandButton.setGraphic(new ImageView(nandImage));
 		grid.add(nandButton, 0, 1, 1, 1);
 
-		Image norImage = new Image("./Images/NOR/NOR_image.png", 60, 40, false, false);
+		Image norImage = new Image(cls.getResourceAsStream("Images/NOR/NOR_image.png"), 60, 40, false, false);
 		Button norButton = new Button();
 		norButton.setOnAction(e -> {
 			selectedItem = "NOR";
@@ -346,7 +350,7 @@ public class Main extends Application {
 		norButton.setGraphic(new ImageView(norImage));
 		grid.add(norButton, 1, 1, 1, 1);
 		
-		Image xorImage = new Image("./Images/XOR/XOR_image.png", 60, 40, false, false);
+		Image xorImage = new Image(cls.getResourceAsStream("Images/XOR/XOR_Image.png"), 60, 40, false, false); // TODO: Make XOR_Image be XOR_image. Caused issues. :/
 		Button xorButton = new Button();
 		xorButton.setOnAction(e -> {
 			selectedItem = "XOR";
@@ -355,7 +359,7 @@ public class Main extends Application {
 		xorButton.setGraphic(new ImageView(xorImage));
 		grid.add(xorButton, 0, 2, 1, 1);
 		
-		Image notImage = new Image("./Images/NOT/NOT_image.png", 60, 40, false, false);
+		Image notImage = new Image(cls.getResourceAsStream("Images/NOT/NOT_image.png"), 60, 40, false, false);
 		Button notButton = new Button();
 		notButton.setOnAction(e -> {
 			selectedItem = "NOT";
@@ -364,7 +368,7 @@ public class Main extends Application {
 		notButton.setGraphic(new ImageView(notImage));
 		grid.add(notButton, 1, 2, 1, 1);
 		
-		Image inputPortImage = new Image("./Images/IOPort/in/IO_IN_image.png", 60, 40, false, false);
+		Image inputPortImage = new Image(cls.getResourceAsStream("Images/IOPort/in/IO_IN_Image.png"), 60, 40, false, false);
 		Button inputPortButton = new Button();
 		inputPortButton.setOnAction(e -> {
 			selectedItem = "IO_IN";
@@ -373,7 +377,7 @@ public class Main extends Application {
 		inputPortButton.setGraphic(new ImageView(inputPortImage));
 		grid.add(inputPortButton, 0, 3, 1, 1);
 		
-		Image outputPortImage = new Image("./Images/IOPort/out/IO_OUT_image.png", 60, 40, false, false);
+		Image outputPortImage = new Image(cls.getResourceAsStream("Images/IOPort/out/IO_OUT_Image.png"), 60, 40, false, false);
 		Button outputPortButton = new Button();
 		outputPortButton.setOnAction(e -> {
 			selectedItem = "IO_OUT";
@@ -382,7 +386,7 @@ public class Main extends Application {
 		outputPortButton.setGraphic(new ImageView(outputPortImage));
 		grid.add(outputPortButton, 1, 3, 1, 1);
 		
-		Image biPortImage = new Image("./Images/IOPort/bi/IO_BI_image.png", 60, 40, false, false);
+		Image biPortImage = new Image(cls.getResourceAsStream("Images/IOPort/bi/IO_BI_Image.png"), 60, 40, false, false);
 		Button biPortButton = new Button();
 		biPortButton.setOnAction(e -> {
 			selectedItem = "IO_BI";
@@ -400,8 +404,10 @@ public class Main extends Application {
 	 * Sets up the tool tab.
 	 * @param grid The grid that holds the tools.
 	 */
-	public void setupToolTab(GridPane grid) {
-		Image selectImage = new Image("./Images/Select.png", 40, 40, false, false);
+	public void setupToolTab(GridPane grid) throws FileNotFoundException, ClassNotFoundException {
+		@SuppressWarnings("rawtypes")
+		Class cls = Class.forName("Main");
+		Image selectImage = new Image(cls.getResourceAsStream("Images/Select.png"), 40, 40, false, false);
 		Button selectButton = new Button();
 		selectButton.setOnAction(e -> {
 			selectedItem = "~SELECT";
@@ -410,7 +416,7 @@ public class Main extends Application {
 		selectButton.setGraphic(new ImageView(selectImage));
 		grid.add(selectButton, 0, 0, 1, 1);
 		
-		Image textImage = new Image("./Images/Text.png", 40, 40, false, false);
+		Image textImage = new Image(cls.getResourceAsStream("Images/Text.png"), 40, 40, false, false);
 		Button textButton = new Button();
 		textButton.setOnAction(e -> {
 			selectedItem = "~TEXT";
@@ -419,7 +425,7 @@ public class Main extends Application {
 		textButton.setGraphic(new ImageView(textImage));
 		grid.add(textButton, 1, 0, 1, 1);
 		
-		Image wireImage = new Image("./Images/Wire.png", 40, 40, false, false);
+		Image wireImage = new Image(cls.getResourceAsStream("Images/Wire.png"), 40, 40, false, false);
 		Button wireButton = new Button();
 		wireButton.setOnAction(e -> {
 			selectedItem = "~WIRE";
@@ -467,13 +473,22 @@ public class Main extends Application {
 	public void openAboutTab() {
 		TextArea aboutText = new TextArea();
 		try {
-			BufferedReader reader = new BufferedReader(new FileReader(new File("./Information/About.txt")));
+			@SuppressWarnings("rawtypes")
+			Class cls = Class.forName("Main");
+			ClassLoader cLoader = cls.getClassLoader();
+			InputStream i = cLoader.getResourceAsStream("Information/About.txt");
+			BufferedReader reader = new BufferedReader(new InputStreamReader(i));
+			
+			
 			String line;
 			while((line = reader.readLine()) != null) {
 				aboutText.appendText(line + "\n");
 			}
 			aboutText.setEditable(false);
 		}catch(IOException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		Tab aboutTab = new Tab("About", aboutText);

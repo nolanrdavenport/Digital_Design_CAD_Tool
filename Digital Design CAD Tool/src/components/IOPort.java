@@ -37,9 +37,21 @@ public class IOPort extends Component{
 		this.name = name;
 		this.id = "IO_"+direction;
 		
-		for(int i = 0; i < this.images.length; i++) {
-			images[i] = new Image("Images/IOPort/"+direction+"/"+"IO_"+direction.toUpperCase()+"_"+i+".png", 60,60,true,false);
+		@SuppressWarnings("rawtypes")
+		Class cls;
+		try {
+			cls = Class.forName("Main");
+			for(int i = 0; i < this.images.length; i++) {
+				images[i] = new Image(cls.getResourceAsStream("Images/IOPort/"+direction+"/"+"IO_"+direction.toUpperCase()+"_"+i+".png"), 60,60,true,false);
+			}
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		this.currImage = images[0];
+	}
+	
+	public SerializableIOPort getSerializableIOPort() {
+		return new SerializableIOPort(super.getX(), super.getY(), rotation, ID, direction, name);
 	}
 }

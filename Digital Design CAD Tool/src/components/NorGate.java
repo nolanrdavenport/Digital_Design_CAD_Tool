@@ -15,8 +15,8 @@
  *      along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 package components;
+
 import components.Component;
-import javafx.scene.canvas.Canvas;
 import javafx.scene.image.Image;
 public class NorGate extends Component{
 	public NorGate(int width, int height, double xPos, double yPos, int rotation, int numInputs, int ID) {
@@ -25,7 +25,14 @@ public class NorGate extends Component{
 		this.numInputs = numInputs;
 		this.id = "NOR";
 		for(int i = 0; i < this.images.length; i++) {
-			images[i] = new Image("Images/NOR/NOR_"+i+".png",120,120,true,false);
+			try {
+				@SuppressWarnings("rawtypes")
+				Class cls = Class.forName("Main");
+				images[i] = new Image(cls.getResourceAsStream("Images/NOR/NOR_"+i+".png"),120,120,true,false);
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		this.currImage = images[0];
 	}

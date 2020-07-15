@@ -15,8 +15,8 @@
  *      along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 package components;
+
 import components.Component;
-import javafx.scene.canvas.Canvas;
 import javafx.scene.image.Image;
 public class XorGate extends Component{
 	public XorGate(int width, int height, double xPos, double yPos, int rotation, int numInputs, int ID) {
@@ -25,7 +25,13 @@ public class XorGate extends Component{
 		this.numInputs = numInputs;
 		this.id = "XOR";
 		for(int i = 0; i < this.images.length; i++) {
-			images[i] = new Image("Images/XOR/XOR_"+i+".png",120,120,true,false);
+			try {
+				Class cls = Class.forName("Main");
+				images[i] = new Image(cls.getResourceAsStream("Images/XOR/XOR_"+i+".png"),120,120,true,false);
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		this.currImage = images[0];
 	}
