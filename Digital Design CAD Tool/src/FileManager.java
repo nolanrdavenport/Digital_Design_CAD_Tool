@@ -109,21 +109,24 @@ public class FileManager{
 		}
 	}
 	
+	public void saveSchematicFileAs() {
+		// Let the user choose or create a new save file in the users file system.
+		FileChooser fc = new FileChooser();
+		fc.setTitle("Save your schematic");
+		fc.setInitialDirectory(new File(System.getProperty("user.home") + "\\Documents\\Digital Design CAD Tool\\Schematics\\"));
+		fc.setInitialFileName(main.currSchematic.name+".sch");
+		fc.getExtensionFilters().addAll( new FileChooser.ExtensionFilter("Schematic Files", "*.sch") ); // Only .sch files can be opened.
+		currFile = fc.showSaveDialog(primaryStage);
+		if(!files.contains(currFile)) {
+			files.add(currFile);
+		}
+		saveSchematicFile();
+	}
+
 	public void saveSchematicFile() {
 		try {
-			// Let the user choose or create a new save file in the users file system.
-			FileChooser fc = new FileChooser();
-			fc.setTitle("Save your schematic");
-			fc.setInitialDirectory(new File(System.getProperty("user.home") + "\\Documents\\Digital Design CAD Tool\\Schematics\\"));
-			fc.getExtensionFilters().addAll( new FileChooser.ExtensionFilter("Schematic Files", "*.sch") ); // Only .sch files can be opened.
-			currFile = fc.showSaveDialog(primaryStage);
-			if(!files.contains(currFile)) {
-				files.add(currFile);
-			}
-			
-			File metaDir = new File(System.getProperty("user.home") + "\\Documents\\Digital Design CAD Tool\\Schematics\\.metadata\\");
-			metaDir.mkdirs();
 			// Write the meta data for the file into the metadata folder.
+			new FileOutputStream(new File(System.getProperty("user.home") + "\\Documents\\Digital Design CAD Tool\\Schematics\\.metadata\\"+currFile.getName().substring(0, currFile.getName().length() - 4)+".metadata")).close(); // clears metadata file
 			BufferedWriter metaDataWriter = new BufferedWriter(new FileWriter(System.getProperty("user.home") + "\\Documents\\Digital Design CAD Tool\\Schematics\\.metadata\\"+currFile.getName().substring(0, currFile.getName().length() - 4)+".metadata"));
 			metaDataWriter.write(Integer.toString(main.currSchematic.width)); // width
 			metaDataWriter.newLine();
@@ -154,18 +157,15 @@ public class FileManager{
 			for(Component comp : main.currSchematic.currState.components) {
 				if(!comp.id.contains("IO")) {
 					oos.writeObject(comp.getSerializableComponent());
-					System.out.println("wrote a component");
 				}
 			}
 			for(Component comp : main.currSchematic.currState.components) {
 				if(comp.id.contains("IO")) {
 					oos.writeObject(((IOPort) comp).getSerializableIOPort());
-					System.out.println("wrote an IOPort");
 				}
 			}
 			for(Wire wire : main.currSchematic.currState.wires) {
 				oos.writeObject(wire.getSerializableWire());
-				System.out.println("wrote a wire");
 			}
 			
 			oos.close();

@@ -37,14 +37,4 @@ public class NandGate extends Component{
 		}
 		this.currImage = images[0];
 	}
-	public void setOutput(){
-		output = true;
-		for(boolean input : inputs) {
-			if(input == false) { 
-				output = false;
-			}
-		}
-		
-		output = !output;
-	}
 }

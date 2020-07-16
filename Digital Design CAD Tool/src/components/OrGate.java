@@ -35,12 +35,4 @@ public class OrGate extends Component{
 		}
 		this.currImage = images[0];
 	}
-	public void setOutput(){
-		output = false;
-		for(boolean input : inputs) {
-			if(input == true) { 
-				output = true;
-			}
-		}
-	}
 }

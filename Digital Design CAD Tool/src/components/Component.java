@@ -49,6 +49,7 @@ public abstract class Component implements Cloneable {
 		this.rotation = rotation;
 		this.selected = false;
 		this.numInputs = numInputs;
+		this.ID = ID;
 
 		inputs = new boolean[numInputs];
 
@@ -180,5 +181,61 @@ public abstract class Component implements Cloneable {
 
 	public SerializableComponent getSerializableComponent() {
 		return new SerializableComponent(location.x, location.y, rotation, id, numInputs, inputs, output, width, height, ID);
+	}
+	
+	public void calculateOutput() {
+		switch (id) {
+		case "AND":
+			output = true;
+			for(boolean input : inputs) {
+				if(input == false) { 
+					output = false;
+				}
+			}
+			break;
+		case "OR":
+			output = false;
+			for(boolean input : inputs) {
+				if(input == true) { 
+					output = true;
+				}
+			}
+			break;
+		case "NAND":
+			output = true;
+			for(boolean input : inputs) {
+				if(input == false) { 
+					output = false;
+				}
+			}
+			output = !output;
+			break;
+		case "NOR":
+			output = false;
+			for(boolean input : inputs) {
+				if(input == true) { 
+					output = true;
+				}
+			}
+			output = !output;
+			break;
+		case "XOR":
+			// TODO: FIGURE THIS OUT
+			break;
+		case "NOT":
+			output = !inputs[0];
+			break;
+		case "IO_IN":
+			//
+			break;
+		case "IO_OUT":
+			//
+			break;
+		case "IO_BI":
+			//
+			break;
+		default:
+			System.err.println("This is not a valid component ID: " + id);
+		}
 	}
 }

@@ -35,7 +35,4 @@ public class NotGate extends Component{
 		}
 		this.currImage = images[0];
 	}
-	public void setOutput(){
-		output = !inputs[0];
-	}
 }
