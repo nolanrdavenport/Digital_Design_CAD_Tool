@@ -71,10 +71,10 @@ public class Main extends Application {
 	
 	public static void main(String[] args) {
 		// Application setup
-		File programFile = new File(System.getenv("ProgramFiles") + "\\Digital Design CAD Tool\\");
+		File programFile = new File(System.getProperty("user.home") + "\\Documents\\Digital Design CAD Tool\\");
 		if(!programFile.exists()) {
 			programFile.mkdir();
-			File schematicsFolder = new File(System.getenv("ProgramFiles") + "\\Digital Design CAD Tool\\Schematics");
+			File schematicsFolder = new File(System.getProperty("user.home") + "\\Documents\\Digital Design CAD Tool\\Schematics");
 			schematicsFolder.mkdir();
 			Application.launch(args);
 		}else {

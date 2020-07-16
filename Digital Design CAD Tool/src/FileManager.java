@@ -56,14 +56,14 @@ public class FileManager{
 			// Fetch the file from the user's file system. 
 			FileChooser fc = new FileChooser();
 			fc.setTitle("Open a schematic file");
-			fc.setInitialDirectory(new File(System.getenv("ProgramFiles") + "\\Digital Design CAD Tool\\Schematics\\"));
+			fc.setInitialDirectory(new File(System.getProperty("user.home") + "\\Documents\\Digital Design CAD Tool\\Schematics\\"));
 			fc.getExtensionFilters().addAll( new FileChooser.ExtensionFilter("Schematic Files", "*.sch") ); // Only .sch files can be opened.
 			File tempFile = fc.showOpenDialog(primaryStage);		
 			files.add(tempFile);
 			currFile = tempFile;
 			
 			// Pull the schematic information
-			BufferedReader metadataReader = new BufferedReader(new FileReader(new File(System.getenv("ProgramFiles") + "\\Digital Design CAD Tool\\Schematics\\.metadata\\"+currFile.getName().substring(0, currFile.getName().length() - 4)+".metadata")));
+			BufferedReader metadataReader = new BufferedReader(new FileReader(new File(System.getProperty("user.home") + "\\Documents\\Digital Design CAD Tool\\Schematics\\.metadata\\"+currFile.getName().substring(0, currFile.getName().length() - 4)+".metadata")));
 			int width = Integer.parseInt(metadataReader.readLine());
 			int height = Integer.parseInt(metadataReader.readLine());
 			int numComponents = Integer.parseInt(metadataReader.readLine());
@@ -114,17 +114,17 @@ public class FileManager{
 			// Let the user choose or create a new save file in the users file system.
 			FileChooser fc = new FileChooser();
 			fc.setTitle("Save your schematic");
-			fc.setInitialDirectory(new File(System.getenv("ProgramFiles") + "\\Digital Design CAD Tool\\Schematics"));
+			fc.setInitialDirectory(new File(System.getProperty("user.home") + "\\Documents\\Digital Design CAD Tool\\Schematics\\"));
 			fc.getExtensionFilters().addAll( new FileChooser.ExtensionFilter("Schematic Files", "*.sch") ); // Only .sch files can be opened.
 			currFile = fc.showSaveDialog(primaryStage);
 			if(!files.contains(currFile)) {
 				files.add(currFile);
 			}
 			
-			File metaDir = new File(System.getenv("ProgramFiles") + "\\Digital Design CAD Tool\\Schematics\\.metadata");
+			File metaDir = new File(System.getProperty("user.home") + "\\Documents\\Digital Design CAD Tool\\Schematics\\.metadata\\");
 			metaDir.mkdirs();
 			// Write the meta data for the file into the metadata folder.
-			BufferedWriter metaDataWriter = new BufferedWriter(new FileWriter(new File(System.getenv("ProgramFiles") + "\\Digital Design CAD Tool\\Schematics\\.metadata\\"+currFile.getName().substring(0, currFile.getName().length() - 4)+".metadata")));
+			BufferedWriter metaDataWriter = new BufferedWriter(new FileWriter(System.getProperty("user.home") + "\\Documents\\Digital Design CAD Tool\\Schematics\\.metadata\\"+currFile.getName().substring(0, currFile.getName().length() - 4)+".metadata"));
 			metaDataWriter.write(Integer.toString(main.currSchematic.width)); // width
 			metaDataWriter.newLine();
 			metaDataWriter.write(Integer.toString(main.currSchematic.height)); // height
