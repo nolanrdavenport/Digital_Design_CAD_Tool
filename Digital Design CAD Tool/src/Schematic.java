@@ -83,6 +83,10 @@ public class Schematic extends Canvas implements Serializable{
 	// For selecting components and wires
 	Component selectedComponent = null;
 	Wire selectedWire = null;
+	
+	// For the functional simulation of this schematic.
+	ArrayList<IOPort> inputPorts; // holds all input ports. 
+	ArrayList<IOPort> outputPorts;
 
 	/*
 	 * Schematic constructor. Creates and initializes instances of the schematic class.
@@ -95,6 +99,8 @@ public class Schematic extends Canvas implements Serializable{
 		futureStates = new LinkedList<SchematicState>();
 		lastState = new SchematicState(currState);
 		IDs = new ArrayList<Integer>();
+		inputPorts = new ArrayList<IOPort>();
+		outputPorts = new ArrayList<IOPort>();
 		this.name = name;
 		this.tabPane = tabPane;
 		this.height = height;
@@ -726,19 +732,26 @@ public class Schematic extends Canvas implements Serializable{
 	 * @return Whether or not the schematic successfully synthesized. If false, then there is an issue with the schematic. 
 	 */
 	public boolean synthesizeSchematic() {
+		// Connects wires to component inputs
 		for(Component comp : currState.components) {
 			// for inputs
-			for(int i = 0; i < comp.inputLocations.length; i++) {
-				for(Wire wire : currState.wires) {
-					for(Line line : wire.lines) {
-						if((line.x1 == comp.inputLocations[i].x && line.y1 == comp.inputLocations[i].y) || (line.x2 == comp.inputLocations[i].x && line.y2 == comp.inputLocations[i].y)) {
-							comp.inputs[i] = wire;
+			if(comp.id.equals("IO_in")) {
+				inputPorts.add((IOPort)comp);
+			}else{
+				if(comp.id.equals("IO_out")) outputPorts.add((IOPort)comp);
+				for(int i = 0; i < comp.inputLocations.length; i++) {
+					for(Wire wire : currState.wires) {
+						for(Line line : wire.lines) {
+							if((line.x1 == comp.inputLocations[i].x && line.y1 == comp.inputLocations[i].y) || (line.x2 == comp.inputLocations[i].x && line.y2 == comp.inputLocations[i].y)) {
+								comp.inputs[i] = wire;
+							}
 						}
 					}
 				}
 			}
 		}
 		debugComponents();
+		new SimulationWindow(main);
 		return true;
 	}
 	
