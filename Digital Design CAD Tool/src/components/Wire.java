@@ -90,7 +90,7 @@ public class Wire implements Cloneable{
 
 			gc.setLineWidth(2);
 
-			gc.strokeLine(line.x1, line.y1 - 1, line.x2, line.y2 - 1);
+			gc.strokeLine(line.x1 - 1, line.y1 - 1, line.x2 - 1, line.y2 - 1);
 			if(line.x1 == line.x2 && line.y1 == line.y2) {
 				itr.remove();
 			}

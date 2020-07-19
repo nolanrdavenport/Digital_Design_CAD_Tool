@@ -50,6 +50,8 @@ public class Schematic extends Canvas implements Serializable{
 	// For dragging the viewport around
 	private double mouseX;
 	private double mouseY;
+	private double translateX = 0;
+	private double translateY = 0;
 
 	// For dragging components around
 	private double compMouseX;
@@ -368,8 +370,10 @@ public class Schematic extends Canvas implements Serializable{
 	public void middleMouseDragged(MouseEvent event) {
 		double deltaX = event.getScreenX() - mouseX;
 		double deltaY = event.getScreenY() - mouseY;
-		this.setTranslateX(this.getTranslateX() + deltaX);
-		this.setTranslateY(this.getTranslateY() + deltaY);
+		translateX = translateX + deltaX;
+		translateY = translateY + deltaY;
+		this.setTranslateX(translateX - (translateX % 10));
+		this.setTranslateY(translateY - (translateY % 10));
 		mouseX = event.getScreenX();
 		mouseY = event.getScreenY();
 	}
@@ -551,9 +555,9 @@ public class Schematic extends Canvas implements Serializable{
 	public void createWire(boolean avoidCreatingWire) {
 		Wire tempWire = new Wire();
 
-		double tempStartX = Math.round((float) wireStartX / 10) * 10 - 1;
+		double tempStartX = Math.round((float) wireStartX / 10) * 10;
 		double tempStartY = Math.round((float) wireStartY / 10) * 10;
-		double tempEndX = Math.round((float) wireEndX / 10) * 10 - 1;
+		double tempEndX = Math.round((float) wireEndX / 10) * 10;
 		double tempEndY = Math.round((float) wireEndY / 10) * 10;
 
 		Line line1;
@@ -628,17 +632,6 @@ public class Schematic extends Canvas implements Serializable{
 	}
 	
 	/*
-	 * Displays useful information for debugging the wire system.
-	 */
-	public void debugWires() {
-		System.out.println("NUM WIRES: " + currState.wires.size());
-		for (int i = 0; i < currState.wires.size(); i++) {
-			System.out.println("Wire " + i + "  |  " + currState.wires.get(i).lines.size() + " lines  |  " + "valueDeterminingComponent: " + currState.wires.get(i).valueDeterminingComponent);
-		}
-		System.out.println("_____________________________________________________________________________________________________________\n");
-	}
-	
-	/*
 	 * Renders the current wire before actually creating a wire object. Used for displaying the possible wire location and properties to the user.
 	 */
 	public void renderCurrentWire() {
@@ -710,6 +703,10 @@ public class Schematic extends Canvas implements Serializable{
 		// right now to create a functional program.
 	}
 	
+	/*
+	 * Generates a unique ID that is between 100000 and 999999.
+	 * @return the unique ID.
+	 */
 	public int generateUniqueID() {
 		boolean foundUniqueID = false;
 		int ID = 0;
@@ -722,5 +719,57 @@ public class Schematic extends Canvas implements Serializable{
 			}
 		}
 		return ID;
+	}
+	
+	/*
+	 * Synthesizes the schematic so that logic simulations can be done. 
+	 * @return Whether or not the schematic successfully synthesized. If false, then there is an issue with the schematic. 
+	 */
+	public boolean synthesizeSchematic() {
+		for(Component comp : currState.components) {
+			// for inputs
+			for(int i = 0; i < comp.inputLocations.length; i++) {
+				for(Wire wire : currState.wires) {
+					for(Line line : wire.lines) {
+						if((line.x1 == comp.inputLocations[i].x && line.y1 == comp.inputLocations[i].y) || (line.x2 == comp.inputLocations[i].x && line.y2 == comp.inputLocations[i].y)) {
+							comp.inputs[i] = wire;
+						}
+					}
+				}
+			}
+		}
+		debugComponents();
+		return true;
+	}
+	
+	/*
+	 * Sets the output IOPorts to the proper value depending on the input IOPorts. 
+	 */
+	public void simulateLogic() {
+		
+	}
+	
+	/*
+	 * Displays useful information for debugging the wire system.
+	 */
+	public void debugWires() {
+		System.out.println("NUM WIRES: " + currState.wires.size());
+		for (int i = 0; i < currState.wires.size(); i++) {
+			System.out.println("Wire " + i + "  |  " + currState.wires.get(i).lines.size() + " lines  |  " + "valueDeterminingComponent: " + currState.wires.get(i).valueDeterminingComponent);
+		}
+		System.out.println("_____________________________________________________________________________________________________________\n");
+	}
+	
+	/*
+	 * Displays useful information for debugging components.
+	 */
+	public void debugComponents() {
+		for(Component comp : currState.components) {
+			System.out.println(comp+":");
+			for(int i = 0; i < comp.inputs.length; i++) {
+				System.out.println("input "+i+": "+comp.inputs[i]);
+			}
+		}
+		System.out.println("___________________________________________________________________________________________________________________\n");
 	}
 }

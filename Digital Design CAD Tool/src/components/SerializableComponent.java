@@ -27,19 +27,24 @@ public class SerializableComponent implements Serializable{
 	public int rotation; // options: "right = 0", "down = 1", "left = 2", "up = 3"
 	public String id;
 	public int numInputs;
-	public boolean[] inputs;
+	public SerializableWire[] inputs;
 	public boolean output;
 	public int width, height;
 	public int ID;
 	
 	// Constructor
-	public SerializableComponent(double xPos, double yPos, int rotation, String id, int numInputs, boolean[] inputs, boolean output, int width, int height, int ID) {
+	public SerializableComponent(double xPos, double yPos, int rotation, String id, int numInputs, Wire[] inputs, boolean output, int width, int height, int ID) {
 		this.xPos = xPos;
 		this.yPos = yPos;
 		this.rotation = rotation;
 		this.id = id;
 		this.numInputs = numInputs;
-		this.inputs = inputs;
+		this.inputs = new SerializableWire[inputs.length];
+		for(int i = 0; i < inputs.length; i++) {
+			if(inputs[i] != null) {
+				this.inputs[i] = inputs[i].getSerializableWire();
+			}
+		}
 		this.output = output;
 		this.width = width;
 		this.height = height;

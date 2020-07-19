@@ -19,52 +19,13 @@ import components.*;
  *      along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 public class TestBench {
-	AndGate test;
+	XorGate test;
 	public static void main(String args[]) {
 		new TestBench();
 	}
 	public TestBench() {
-		test = new AndGate(60, 40, 0, 0, 0, 4, 123123); // test and gate
-		
-		System.out.println("Creating truth table using the test and gate as the logical component: ");
-		test.inputs[0] = false;
-		test.inputs[1] = false;
-		test.inputs[2] = false;
-		test.inputs[3] = false;
+		test = new XorGate(60, 40, 0, 0, 0, 2, 123123); // test and gate
+				
 		test.calculateOutput();
-		for(Boolean input : test.inputs) {
-			System.out.print(input + " | ");
-		}
-		System.out.println(test.output + " |");
-		
-		test.inputs[0] = false;
-		test.inputs[1] = true;
-		test.inputs[2] = false;
-		test.inputs[3] = false;
-		test.calculateOutput();
-		for(Boolean input : test.inputs) {
-			System.out.print(input + " | ");
-		}
-		System.out.println(test.output + " |");
-		
-		test.inputs[0] = true;
-		test.inputs[1] = false;
-		test.inputs[2] = false;
-		test.inputs[3] = false;
-		test.calculateOutput();
-		for(Boolean input : test.inputs) {
-			System.out.print(input + " | ");
-		}
-		System.out.println(test.output + " |");
-		
-		test.inputs[0] = true;
-		test.inputs[1] = true;
-		test.inputs[2] = true;
-		test.inputs[3] = true;
-		test.calculateOutput();
-		for(Boolean input : test.inputs) {
-			System.out.print(input + " | ");
-		}
-		System.out.println(test.output + " |");
 	}
 }

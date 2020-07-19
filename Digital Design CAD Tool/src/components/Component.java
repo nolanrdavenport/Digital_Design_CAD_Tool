@@ -36,7 +36,7 @@ public abstract class Component implements Cloneable {
 	public Image currImage;
 	public boolean selected;
 	public int numInputs;
-	public boolean[] inputs;
+	public Wire[] inputs;
 	public boolean output;
 	public int width, height;
 	public Vec2d outputLocation;
@@ -51,7 +51,7 @@ public abstract class Component implements Cloneable {
 		this.numInputs = numInputs;
 		this.ID = ID;
 
-		inputs = new boolean[numInputs];
+		inputs = new Wire[numInputs];
 
 		// Location vectors
 		location = new Vec2d(xPos, yPos);
@@ -180,62 +180,87 @@ public abstract class Component implements Cloneable {
 	}
 
 	public SerializableComponent getSerializableComponent() {
-		return new SerializableComponent(location.x, location.y, rotation, id, numInputs, inputs, output, width, height, ID);
+		return new SerializableComponent(location.x, location.y, rotation, id, numInputs, inputs, output, width, height,
+				ID);
 	}
-	
-	public void calculateOutput() {
-		switch (id) {
-		case "AND":
-			output = true;
-			for(boolean input : inputs) {
-				if(input == false) { 
+
+	public boolean calculateOutput() {
+		try {
+			switch (id) {
+			case "AND":
+				output = true;
+				for (Wire input : inputs) {
+					if (input == null) throw new Exception();
+					if (input.valueDeterminingComponent.calculateOutput() == false) {
+						output = false;
+					}
+				}
+				break;
+			case "OR":
+				output = false;
+				for (Wire input : inputs) {
+					if (input == null) throw new Exception();
+					if (input.valueDeterminingComponent.calculateOutput() == true) {
+						output = true;
+					}
+				}
+				break;
+			case "NAND":
+				output = true;
+				for (Wire input : inputs) {
+					if (input == null) throw new Exception();
+					if (input.valueDeterminingComponent.calculateOutput() == false) {
+						output = false;
+					}
+				}
+				output = !output;
+				break;
+			case "NOR":
+				output = false;
+				for (Wire input : inputs) {
+					if (input == null) throw new Exception();
+					if (input.valueDeterminingComponent.calculateOutput() == true) {
+						output = true;
+					}
+				}
+				output = !output;
+				break;
+			case "XOR":
+				// odd parity produces an output of "1", "high", "true" (whatever description
+				// you choose lol).
+				int numTrueValues = 0;
+				for (Wire input : inputs) {
+					if (input == null) throw new Exception();
+					if (input.valueDeterminingComponent.calculateOutput())
+						numTrueValues++;
+				}
+
+				if ((numTrueValues % 2) == 1) {
+					output = true;
+				} else {
 					output = false;
 				}
+				break;
+			case "NOT":
+				output = !inputs[0].valueDeterminingComponent.calculateOutput();
+				break;
+			case "IO_IN":
+				//
+				break;
+			case "IO_OUT":
+				//
+				break;
+			case "IO_BI":
+				//
+				break;
+			default:
+				System.err.println("This is not a valid component ID: " + id);
 			}
-			break;
-		case "OR":
-			output = false;
-			for(boolean input : inputs) {
-				if(input == true) { 
-					output = true;
-				}
-			}
-			break;
-		case "NAND":
-			output = true;
-			for(boolean input : inputs) {
-				if(input == false) { 
-					output = false;
-				}
-			}
-			output = !output;
-			break;
-		case "NOR":
-			output = false;
-			for(boolean input : inputs) {
-				if(input == true) { 
-					output = true;
-				}
-			}
-			output = !output;
-			break;
-		case "XOR":
-			// TODO: FIGURE THIS OUT
-			break;
-		case "NOT":
-			output = !inputs[0];
-			break;
-		case "IO_IN":
-			//
-			break;
-		case "IO_OUT":
-			//
-			break;
-		case "IO_BI":
-			//
-			break;
-		default:
-			System.err.println("This is not a valid component ID: " + id);
+			return output;
+		} catch (Exception e) {
+			System.err.println("Not all inputs have connections for: "+this);
+			return false;
 		}
+
 	}
 }

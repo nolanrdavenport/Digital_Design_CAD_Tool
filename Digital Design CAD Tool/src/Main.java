@@ -278,9 +278,16 @@ public class Main extends Application {
 		MenuItem openProjectItem = new MenuItem("Open Project...");
 		MenuItem closeProjectItem = new MenuItem("Close Project");
 		MenuItem propertiesItem = new MenuItem("Properties");
+		MenuItem synthesizeItem = new MenuItem("Synthesize Schematic");
+		synthesizeItem.setOnAction(e -> {
+			for(Schematic sch : schematics) {
+				sch.synthesizeSchematic();
+			}
+		});
 		projectMenu.getItems().add(openProjectItem);
 		projectMenu.getItems().add(closeProjectItem);
 		projectMenu.getItems().add(propertiesItem);
+		projectMenu.getItems().add(synthesizeItem);
 		
 		// Window Menu
 		Menu windowMenu = new Menu("Window");

@@ -21,8 +21,6 @@ import javafx.scene.image.Image;
 public class XorGate extends Component{
 	public XorGate(int width, int height, double xPos, double yPos, int rotation, int numInputs, int ID) {
 		super(60, 40, xPos, yPos, rotation, numInputs, ID);
-		inputs = new boolean[numInputs];
-		this.numInputs = numInputs;
 		this.id = "XOR";
 		for(int i = 0; i < this.images.length; i++) {
 			try {
