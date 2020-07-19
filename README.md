@@ -1,2 +1,2 @@
 # Digital_Design_CAD_Tool
-This is the repo that will host my summer project where I will design a simple digital logic cad tool. 
+This software is a purely educational digital design CAD tool that is used to sketch up and simulate digital systems. This project is in it's infancy with no functional release at this time.
