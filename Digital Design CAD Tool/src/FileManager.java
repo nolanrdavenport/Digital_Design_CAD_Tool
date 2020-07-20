@@ -80,11 +80,13 @@ public class FileManager{
 			for(int i = 0; i < numComponents; i++) {
 				SerializableComponent temp = (SerializableComponent)ois.readObject();
 				main.currSchematic.currState.components.add(temp.getDeserializedComponent());
+				main.currSchematic.IDs.add(temp.ID);
 			}
 			
 			for(int i = 0; i < numIOPorts; i++) {
 				SerializableIOPort temp = (SerializableIOPort)ois.readObject();
 				main.currSchematic.currState.components.add(temp.getDeserializedIOPort());
+				main.currSchematic.IDs.add(temp.ID);
 			}
 			
 			for(int i = 0; i < numWires; i++) {

@@ -278,8 +278,8 @@ public class Main extends Application {
 		MenuItem openProjectItem = new MenuItem("Open Project...");
 		MenuItem closeProjectItem = new MenuItem("Close Project");
 		MenuItem propertiesItem = new MenuItem("Properties");
-		MenuItem synthesizeItem = new MenuItem("Synthesize Schematic");
-		synthesizeItem.setOnAction(e -> {
+		MenuItem simulateItem = new MenuItem("Simulate Schematic");
+		simulateItem.setOnAction(e -> {
 			for(Schematic sch : schematics) {
 				sch.synthesizeSchematic();
 			}
@@ -287,7 +287,7 @@ public class Main extends Application {
 		projectMenu.getItems().add(openProjectItem);
 		projectMenu.getItems().add(closeProjectItem);
 		projectMenu.getItems().add(propertiesItem);
-		projectMenu.getItems().add(synthesizeItem);
+		projectMenu.getItems().add(simulateItem);
 		
 		// Window Menu
 		Menu windowMenu = new Menu("Window");

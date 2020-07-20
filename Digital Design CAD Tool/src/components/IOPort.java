@@ -52,6 +52,6 @@ public class IOPort extends Component{
 	}
 	
 	public SerializableIOPort getSerializableIOPort() {
-		return new SerializableIOPort(super.getX(), super.getY(), rotation, ID, direction, name);
+		return new SerializableIOPort(super.getX(), super.getY(), rotation, this.ID, direction, name);
 	}
 }

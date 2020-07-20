@@ -191,7 +191,7 @@ public abstract class Component implements Cloneable {
 				output = true;
 				for (Wire input : inputs) {
 					if (input == null) throw new Exception();
-					if (input.valueDeterminingComponent.calculateOutput() == false) {
+					if (input.valueDeterminingComponent.output == false) {
 						output = false;
 					}
 				}
@@ -200,7 +200,7 @@ public abstract class Component implements Cloneable {
 				output = false;
 				for (Wire input : inputs) {
 					if (input == null) throw new Exception();
-					if (input.valueDeterminingComponent.calculateOutput() == true) {
+					if (input.valueDeterminingComponent.output == true) {
 						output = true;
 					}
 				}
@@ -209,7 +209,7 @@ public abstract class Component implements Cloneable {
 				output = true;
 				for (Wire input : inputs) {
 					if (input == null) throw new Exception();
-					if (input.valueDeterminingComponent.calculateOutput() == false) {
+					if (input.valueDeterminingComponent.output == false) {
 						output = false;
 					}
 				}
@@ -219,7 +219,7 @@ public abstract class Component implements Cloneable {
 				output = false;
 				for (Wire input : inputs) {
 					if (input == null) throw new Exception();
-					if (input.valueDeterminingComponent.calculateOutput() == true) {
+					if (input.valueDeterminingComponent.output == true) {
 						output = true;
 					}
 				}
@@ -231,7 +231,7 @@ public abstract class Component implements Cloneable {
 				int numTrueValues = 0;
 				for (Wire input : inputs) {
 					if (input == null) throw new Exception();
-					if (input.valueDeterminingComponent.calculateOutput())
+					if (input.valueDeterminingComponent.output)
 						numTrueValues++;
 				}
 
@@ -242,16 +242,16 @@ public abstract class Component implements Cloneable {
 				}
 				break;
 			case "NOT":
-				output = !inputs[0].valueDeterminingComponent.calculateOutput();
+				output = !inputs[0].valueDeterminingComponent.output;
 				break;
-			case "IO_IN":
-				//
+			case "IO_in":
+				// the output gets calculated during the simulation process when the user chooses the output. 
 				break;
-			case "IO_OUT":
-				//
+			case "IO_out":
+				output = inputs[0].valueDeterminingComponent.output;
 				break;
-			case "IO_BI":
-				//
+			case "IO_bi":
+				// TODO: figure this out
 				break;
 			default:
 				System.err.println("This is not a valid component ID: " + id);

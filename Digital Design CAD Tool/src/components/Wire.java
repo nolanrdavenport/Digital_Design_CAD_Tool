@@ -104,27 +104,27 @@ public class Wire implements Cloneable{
 						|| (line1.x1 == line2.x2 && line1.y1 == line2.y2))) {
 					numSame1++;
 					if (numSame1 >= 3) {
-						gc.fillOval(line1.x1 - 5, line1.y1 - 6, 10, 10);
+						gc.fillOval(line1.x1 - 6, line1.y1 - 6, 10, 10);
 						numSame1 = 0;
 					}
 				}else if(line1 != line2 && ((line1.x2 == line2.x1 && line1.y2 == line2.y1)
 						|| (line1.x2 == line2.x2 && line1.y2 == line2.y2))) {
 					numSame2++;
 					if (numSame2 >= 3) {
-						gc.fillOval(line1.x2 - 5, line1.y2 - 6, 10, 10);
+						gc.fillOval(line1.x2 - 6, line1.y2 - 6, 10, 10);
 						numSame2 = 0;
 					}
 				}
 				// Vertically in between.
 				if(line1.x1 == line1.x2 && line1.x1 == line2.x2
 						&& ((line2.y2 < line1.y1 && line2.y2 > line1.y2) || (line2.y2 > line1.y1 && line2.y2 < line1.y2))) {
-					gc.fillOval(line2.x2 - 5, line2.y2 - 6, 10, 10);
+					gc.fillOval(line2.x2 - 6, line2.y2 - 6, 10, 10);
 				}
 				
 				// Horizontally in between.
 				if(line1.y1 == line1.y2 && line1.y1 == line2.y2
 						&& ((line2.x2 < line1.x1 && line2.x2 > line1.x2) || (line2.x2 > line1.x1 && line2.x2 < line1.x2))) {
-					gc.fillOval(line2.x2 - 5, line2.y2 - 6, 10, 10);
+					gc.fillOval(line2.x2 - 6, line2.y2 - 6, 10, 10);
 				}
 			}
 		}

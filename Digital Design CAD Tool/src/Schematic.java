@@ -490,22 +490,22 @@ public class Schematic extends Canvas implements Serializable{
 			break;
 		case "NOT":
 			currState.components.add(new NotGate(0, 0, (mouseEventX - (mouseEventX % 10)),
-					(mouseEventY - (mouseEventY % 10)), 0, 2, generateUniqueID()));
+					(mouseEventY - (mouseEventY % 10)), 0, 1, generateUniqueID()));
 			break;
 		case "IO_IN":
 			//TODO: CHANGE THIS TO ALLOW USER TO CHANGE NAME
 			currState.components.add(new IOPort((mouseEventX - (mouseEventX % 10)),
-					(mouseEventY - (mouseEventY % 10)), 0, 0, "in", "temp"));
+					(mouseEventY - (mouseEventY % 10)), 0, generateUniqueID(), "in", "temp"));
 			break;
 		case "IO_OUT":
 			//TODO: CHANGE THIS TO ALLOW USER TO CHANGE NAME
 			currState.components.add(new IOPort((mouseEventX - (mouseEventX % 10)),
-					(mouseEventY - (mouseEventY % 10)), 0, 0, "out", "temp"));
+					(mouseEventY - (mouseEventY % 10)), 0, generateUniqueID(), "out", "temp"));
 			break;
 		case "IO_BI":
 			//TODO: CHANGE THIS TO ALLOW USER TO CHANGE NAME
 			currState.components.add(new IOPort((mouseEventX - (mouseEventX % 10)),
-					(mouseEventY - (mouseEventY % 10)), 0, 0, "bi", "temp"));
+					(mouseEventY - (mouseEventY % 10)), 0, generateUniqueID(), "bi", "temp"));
 			break;
 		default:
 			System.err.println("This is not a valid component ID: " + selectedItem);
@@ -732,6 +732,8 @@ public class Schematic extends Canvas implements Serializable{
 	 * @return Whether or not the schematic successfully synthesized. If false, then there is an issue with the schematic. 
 	 */
 	public boolean synthesizeSchematic() {
+		inputPorts.clear();
+		outputPorts.clear();
 		// Connects wires to component inputs
 		for(Component comp : currState.components) {
 			// for inputs
@@ -759,7 +761,23 @@ public class Schematic extends Canvas implements Serializable{
 	 * Sets the output IOPorts to the proper value depending on the input IOPorts. 
 	 */
 	public void simulateLogic() {
-		
+		for(int i = 0; i < currState.components.size() * 30; i++) {
+			setOutputs();
+		}
+	}
+	
+	/*
+	 * Loops through and sets the outputs of the components.
+	 * @return Whether or not an output was changed.
+	 */
+	public boolean setOutputs() {
+		boolean somethingChanged = false;
+		for(Component comp : currState.components) {
+			boolean oldOut = comp.output;
+			comp.calculateOutput();
+			if(oldOut != comp.output) somethingChanged = true;
+		}
+		return somethingChanged;
 	}
 	
 	/*
