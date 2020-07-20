@@ -90,6 +90,10 @@ public abstract class Component implements Cloneable {
 			gc.strokeRect((location.x - (location.x % 10)), (location.y - (location.y % 10)), currImage.getWidth(),
 					currImage.getHeight());
 		}
+		if(this instanceof IOPort) {
+			gc.setFill(Color.WHITE);
+			gc.fillText(Integer.toString(ID), (location.x - (location.x % 10))+10, (location.y - (location.y % 10))+23);
+		}
 	}
 
 	/*

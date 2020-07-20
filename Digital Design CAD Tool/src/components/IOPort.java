@@ -30,6 +30,7 @@ public class IOPort extends Component{
 	// Options are: "in", "out", or "bi", for input, output and bidirectional.
 	public String direction = null;
 	public String name = null;
+	public int spot = 0;
 	
 	public IOPort(double xPos, double yPos, int rotation, int ID, String direction, String name) {
 		super(30, 20, xPos, yPos, rotation, 1, ID);

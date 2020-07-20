@@ -18,7 +18,7 @@ public class SimulationWindow extends Stage{
 			boxes = new ArrayList<CheckBox>();
 			
 			for(int i = 0; i < main.currSchematic.inputPorts.size(); i++) {
-				boxes.add(new CheckBox("input "+i));
+				boxes.add(new CheckBox("input "+main.currSchematic.inputPorts.get(i).ID));
 			}
 			
 			VBox vbox = new VBox(boxes.get(0));
@@ -53,7 +53,7 @@ public class SimulationWindow extends Stage{
 		}
 		main.currSchematic.simulateLogic();
 		for(int i = 0; i < main.currSchematic.outputPorts.size(); i++) {
-			outputArea.appendText("output "+i+": "+main.currSchematic.outputPorts.get(i).output+"\n");
+			outputArea.appendText("output "+main.currSchematic.outputPorts.get(i).ID+": "+main.currSchematic.outputPorts.get(i).output+"\n");
 		}
 	}
 }

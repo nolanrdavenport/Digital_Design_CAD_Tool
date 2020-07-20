@@ -494,18 +494,21 @@ public class Schematic extends Canvas implements Serializable{
 			break;
 		case "IO_IN":
 			//TODO: CHANGE THIS TO ALLOW USER TO CHANGE NAME
+			int uniqueID1 = generateUniqueID();
 			currState.components.add(new IOPort((mouseEventX - (mouseEventX % 10)),
-					(mouseEventY - (mouseEventY % 10)), 0, generateUniqueID(), "in", "temp"));
+					(mouseEventY - (mouseEventY % 10)), 0, uniqueID1, "in", Integer.toString(uniqueID1)));
 			break;
 		case "IO_OUT":
 			//TODO: CHANGE THIS TO ALLOW USER TO CHANGE NAME
+			int uniqueID2 = generateUniqueID();
 			currState.components.add(new IOPort((mouseEventX - (mouseEventX % 10)),
-					(mouseEventY - (mouseEventY % 10)), 0, generateUniqueID(), "out", "temp"));
+					(mouseEventY - (mouseEventY % 10)), 0, uniqueID2, "out", Integer.toString(uniqueID2)));
 			break;
 		case "IO_BI":
 			//TODO: CHANGE THIS TO ALLOW USER TO CHANGE NAME
+			int uniqueID3 = generateUniqueID();
 			currState.components.add(new IOPort((mouseEventX - (mouseEventX % 10)),
-					(mouseEventY - (mouseEventY % 10)), 0, generateUniqueID(), "bi", "temp"));
+					(mouseEventY - (mouseEventY % 10)), 0, uniqueID3, "bi", Integer.toString(uniqueID3)));
 			break;
 		default:
 			System.err.println("This is not a valid component ID: " + selectedItem);
