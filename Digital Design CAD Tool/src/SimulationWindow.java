@@ -64,7 +64,7 @@ public class SimulationWindow extends Stage{
 			Label[] inputLabels = new Label[main.currSchematic.inputPorts.size()];
 			VBox inputLabelsVBox = new VBox();
 			for(int i = 0; i < inputPortsSize; i++) {
-				inputLabels[i] = new Label(Integer.toString(main.currSchematic.inputPorts.get(i).ID) + ":  ");
+				inputLabels[i] = new Label(main.currSchematic.inputPorts.get(i).name + ":  ");
 				inputLabelsVBox.getChildren().add(inputLabels[i]);
 			}
 			HBox inputBoxesHorizontal = new HBox(inputLabelsVBox);

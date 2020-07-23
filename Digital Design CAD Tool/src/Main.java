@@ -104,6 +104,7 @@ public class Main extends Application {
 		this.controlTabPane = controlTabPane;
 		
 		settingsPanel = new ScrollPane();
+		settingsPanel.setContent(new Label("Component Settings"));
 		
 		GridPane toolGrid = new GridPane();
 		setupToolTab(toolGrid);
