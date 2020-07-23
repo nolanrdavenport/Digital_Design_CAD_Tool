@@ -43,6 +43,7 @@ import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
@@ -54,6 +55,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 
 public class Main extends Application {
@@ -67,6 +69,7 @@ public class Main extends Application {
 	public Schematic currSchematic;
 	public Schematic selectedSchematic;
 	public TabPane controlTabPane;
+	public ScrollPane settingsPanel;
 	public FileManager fileManager;
 	
 	public static void main(String[] args) {
@@ -100,12 +103,17 @@ public class Main extends Application {
 		TabPane controlTabPane = new TabPane();
 		this.controlTabPane = controlTabPane;
 		
+		settingsPanel = new ScrollPane();
+		
 		GridPane toolGrid = new GridPane();
 		setupToolTab(toolGrid);
 		GridPane componentGrid = new GridPane();
 		setupComponentTab(componentGrid);
 		
-		splitPane.getItems().addAll(controlTabPane, tabContainer);
+		VBox controlPanel = new VBox(controlTabPane);
+		controlPanel.getChildren().add(settingsPanel);
+		
+		splitPane.getItems().addAll(controlPanel, tabContainer);
 		this.primaryStage = primaryStage;
 		this.menuBar = menuBar;
 		this.tabPane = tabPane;
@@ -326,6 +334,7 @@ public class Main extends Application {
 		Button andButton = new Button();
 		andButton.setOnAction(e -> {
 			selectedItem = "AND";
+			updateSettingsPanel(selectedItem);
 			scene.setCursor(Cursor.CROSSHAIR);
 		});
 		andButton.setGraphic(new ImageView(andImage));
@@ -335,6 +344,7 @@ public class Main extends Application {
 		Button orButton = new Button();
 		orButton.setOnAction(e -> {
 			selectedItem = "OR";
+			updateSettingsPanel(selectedItem);
 			scene.setCursor(Cursor.CROSSHAIR);
 		});
 		orButton.setGraphic(new ImageView(orImage));
@@ -344,6 +354,7 @@ public class Main extends Application {
 		Button nandButton = new Button();
 		nandButton.setOnAction(e -> {
 			selectedItem = "NAND";
+			updateSettingsPanel(selectedItem);
 			scene.setCursor(Cursor.CROSSHAIR);
 		});
 		nandButton.setGraphic(new ImageView(nandImage));
@@ -353,6 +364,7 @@ public class Main extends Application {
 		Button norButton = new Button();
 		norButton.setOnAction(e -> {
 			selectedItem = "NOR";
+			updateSettingsPanel(selectedItem);
 			scene.setCursor(Cursor.CROSSHAIR);
 		});
 		norButton.setGraphic(new ImageView(norImage));
@@ -362,6 +374,7 @@ public class Main extends Application {
 		Button xorButton = new Button();
 		xorButton.setOnAction(e -> {
 			selectedItem = "XOR";
+			updateSettingsPanel(selectedItem);
 			scene.setCursor(Cursor.CROSSHAIR);
 		});
 		xorButton.setGraphic(new ImageView(xorImage));
@@ -371,6 +384,7 @@ public class Main extends Application {
 		Button notButton = new Button();
 		notButton.setOnAction(e -> {
 			selectedItem = "NOT";
+			updateSettingsPanel(selectedItem);
 			scene.setCursor(Cursor.CROSSHAIR);
 		});
 		notButton.setGraphic(new ImageView(notImage));
@@ -380,6 +394,7 @@ public class Main extends Application {
 		Button inputPortButton = new Button();
 		inputPortButton.setOnAction(e -> {
 			selectedItem = "IO_IN";
+			updateSettingsPanel(selectedItem);
 			scene.setCursor(Cursor.CROSSHAIR);
 		});
 		inputPortButton.setGraphic(new ImageView(inputPortImage));
@@ -389,6 +404,8 @@ public class Main extends Application {
 		Button outputPortButton = new Button();
 		outputPortButton.setOnAction(e -> {
 			selectedItem = "IO_OUT";
+			updateSettingsPanel(selectedItem);
+
 			scene.setCursor(Cursor.CROSSHAIR);
 		});
 		outputPortButton.setGraphic(new ImageView(outputPortImage));
@@ -398,6 +415,7 @@ public class Main extends Application {
 		Button biPortButton = new Button();
 		biPortButton.setOnAction(e -> {
 			selectedItem = "IO_BI";
+			updateSettingsPanel(selectedItem);
 			scene.setCursor(Cursor.CROSSHAIR);
 		});
 		biPortButton.setGraphic(new ImageView(biPortImage));
@@ -502,5 +520,24 @@ public class Main extends Application {
 		Tab aboutTab = new Tab("About", aboutText);
 		tabPane.getTabs().add(aboutTab);
 		tabPane.getSelectionModel().select(aboutTab);
+	}
+	
+	/*
+	 * Updates the settings panel whenever on object is selected to be placed down.
+	 */
+	public void updateSettingsPanel(String id) {
+		// TODO: make it support changing settings for other components
+		if(id.contains("IO")) {
+			VBox IOSettings = new VBox(new Label("Component Settings"));
+			// name field
+			HBox nameBox = new HBox(new Label("Name: "));
+			TextField nameField = new TextField();
+			nameBox.getChildren().add(nameField);
+			IOSettings.getChildren().add(nameBox);
+			
+			settingsPanel.setContent(IOSettings);
+		}else {
+			VBox IOSettings = new VBox(new Label("Component Settings"));
+		}
 	}
 }

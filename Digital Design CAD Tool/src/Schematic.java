@@ -31,9 +31,12 @@ import javafx.scene.Cursor;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 
 public class Schematic extends Canvas implements Serializable{
@@ -122,7 +125,14 @@ public class Schematic extends Canvas implements Serializable{
 			
 			if (event.getButton() == MouseButton.PRIMARY && main.selectedItem != "NONE"
 					&& !main.selectedItem.contains("~")) {
-				placeComponent(main.selectedItem, event);
+				String componentName = "";
+				if(main.selectedItem.contains("IO")) {
+					VBox settingsBox = (VBox) main.settingsPanel.getContent();
+					HBox nameBox = (HBox) settingsBox.getChildren().get(1); 
+					TextField nameField = (TextField) nameBox.getChildren().get(1);
+					componentName = nameField.getText();
+				}
+				placeComponent(main.selectedItem, event, componentName);
 			} else if (event.getButton() == MouseButton.PRIMARY && main.selectedItem == "~SELECT") {
 				// For selecting components or wires with the select tool.
 				boolean selectedAnItem = false;
@@ -192,13 +202,13 @@ public class Schematic extends Canvas implements Serializable{
 									&& Math.abs(mouseEventY - line.y1) <= wireDetectionThreshold) {
 								startLine(event, WireStartLocation.WIRE);
 								wireToBeAddedTo = wire;
-								valueDeterminingComponent = wireToBeAddedTo.valueDeterminingComponent;
+								valueDeterminingComponent = wireToBeAddedTo.getValueDeterminingComponent();
 								break;
 							} else if (Math.abs(mouseEventX - line.x2) <= wireDetectionThreshold
 									&& Math.abs(mouseEventY - line.y2) <= wireDetectionThreshold) {
 								startLine(event, WireStartLocation.WIRE);
 								wireToBeAddedTo = wire;
-								valueDeterminingComponent = wireToBeAddedTo.valueDeterminingComponent;
+								valueDeterminingComponent = wireToBeAddedTo.getValueDeterminingComponent();
 								break;
 							} else {
 								wireToBeAddedTo = null;
@@ -281,12 +291,12 @@ public class Schematic extends Canvas implements Serializable{
 							endingPointClosed = true;
 							if(wireToBeAddedTo == null) {
 								wireToBeAddedTo = wire;
-							}else if(wireToBeAddedTo.valueDeterminingComponent != null && wire.valueDeterminingComponent != null && (wireToBeAddedTo.valueDeterminingComponent != wire.valueDeterminingComponent)) {
+							}else if(wireToBeAddedTo.getValueDeterminingComponent() != null && wire.getValueDeterminingComponent() != null && (wireToBeAddedTo.getValueDeterminingComponent() != wire.getValueDeterminingComponent())) {
 								wireError(0);
 								avoidCreatingWire = true;
-							}else if(wireToBeAddedTo.valueDeterminingComponent != null) {
+							}else if(wireToBeAddedTo.getValueDeterminingComponent() != null) {
 								combineWires(wireToBeAddedTo, wire);
-							}else if(wire.valueDeterminingComponent != null) {
+							}else if(wire.getValueDeterminingComponent() != null) {
 								combineWires(wire, wireToBeAddedTo);
 								wireToBeAddedTo = wire;
 							}else {
@@ -299,12 +309,12 @@ public class Schematic extends Canvas implements Serializable{
 							endingPointClosed = true;
 							if(wireToBeAddedTo == null) {
 								wireToBeAddedTo = wire;
-							}else if(wireToBeAddedTo.valueDeterminingComponent != null && wire.valueDeterminingComponent != null  && (wireToBeAddedTo.valueDeterminingComponent != wire.valueDeterminingComponent)) {
+							}else if(wireToBeAddedTo.getValueDeterminingComponent() != null && wire.getValueDeterminingComponent() != null  && (wireToBeAddedTo.getValueDeterminingComponent() != wire.getValueDeterminingComponent())) {
 								wireError(0);
 								avoidCreatingWire = true;
-							}else if(wireToBeAddedTo.valueDeterminingComponent != null) {
+							}else if(wireToBeAddedTo.getValueDeterminingComponent() != null) {
 								combineWires(wireToBeAddedTo, wire);
-							}else if(wire.valueDeterminingComponent != null) {
+							}else if(wire.getValueDeterminingComponent() != null) {
 								combineWires(wire, wireToBeAddedTo);
 								wireToBeAddedTo = wire;
 							}else {
@@ -462,7 +472,7 @@ public class Schematic extends Canvas implements Serializable{
 	 * @param selectedItem The string for the selected item. 
 	 * @param event The mouse event that initiated the method call.
 	 */
-	public void placeComponent(String selectedItem, MouseEvent event) {
+	public void placeComponent(String selectedItem, MouseEvent event, String name) {
 		double mouseEventX = event.getX();
 		double mouseEventY = event.getY();
 		
@@ -496,19 +506,19 @@ public class Schematic extends Canvas implements Serializable{
 			//TODO: CHANGE THIS TO ALLOW USER TO CHANGE NAME
 			int uniqueID1 = generateUniqueID();
 			currState.components.add(new IOPort((mouseEventX - (mouseEventX % 10)),
-					(mouseEventY - (mouseEventY % 10)), 0, uniqueID1, "in", Integer.toString(uniqueID1)));
+					(mouseEventY - (mouseEventY % 10)), 0, uniqueID1, "in", name));
 			break;
 		case "IO_OUT":
 			//TODO: CHANGE THIS TO ALLOW USER TO CHANGE NAME
 			int uniqueID2 = generateUniqueID();
 			currState.components.add(new IOPort((mouseEventX - (mouseEventX % 10)),
-					(mouseEventY - (mouseEventY % 10)), 0, uniqueID2, "out", Integer.toString(uniqueID2)));
+					(mouseEventY - (mouseEventY % 10)), 0, uniqueID2, "out", name));
 			break;
 		case "IO_BI":
 			//TODO: CHANGE THIS TO ALLOW USER TO CHANGE NAME
 			int uniqueID3 = generateUniqueID();
 			currState.components.add(new IOPort((mouseEventX - (mouseEventX % 10)),
-					(mouseEventY - (mouseEventY % 10)), 0, uniqueID3, "bi", Integer.toString(uniqueID3)));
+					(mouseEventY - (mouseEventY % 10)), 0, uniqueID3, "bi", name));
 			break;
 		default:
 			System.err.println("This is not a valid component ID: " + selectedItem);
@@ -587,12 +597,12 @@ public class Schematic extends Canvas implements Serializable{
 		}
 
 		if (wireToBeAddedTo != null) {
-			if(wireToBeAddedTo.valueDeterminingComponent != null && valueDeterminingComponent != null && (wireToBeAddedTo.valueDeterminingComponent != valueDeterminingComponent)) {
+			if(wireToBeAddedTo.getValueDeterminingComponent() != null && valueDeterminingComponent != null && (wireToBeAddedTo.getValueDeterminingComponent() != valueDeterminingComponent)) {
 				wireError(0);
-			}else if(wireToBeAddedTo.valueDeterminingComponent == null && !avoidCreatingWire) {
+			}else if(wireToBeAddedTo.getValueDeterminingComponent() == null && !avoidCreatingWire) {
 				wireToBeAddedTo.addLine(line1);
 				wireToBeAddedTo.addLine(line2);
-				wireToBeAddedTo.valueDeterminingComponent = valueDeterminingComponent;
+				wireToBeAddedTo.setValueDeterminingComponent(valueDeterminingComponent);
 				wireToBeAddedTo = null;
 			}else if(!avoidCreatingWire){
 				wireToBeAddedTo.addLine(line1);
@@ -601,7 +611,7 @@ public class Schematic extends Canvas implements Serializable{
 			}
 		} else {
 			if(valueDeterminingComponent != null) {
-				tempWire.valueDeterminingComponent = valueDeterminingComponent;
+				tempWire.setValueDeterminingComponent(valueDeterminingComponent);
 			}
 			currState.wires.add(tempWire);
 		}
@@ -678,7 +688,7 @@ public class Schematic extends Canvas implements Serializable{
 	public void startLine(MouseEvent e, WireStartLocation wStartLoc ) {
 		if(wStartLoc == WireStartLocation.COMPONENT) {
 			for(Wire wire : currState.wires) {
-				if(wire.valueDeterminingComponent == valueDeterminingComponent) {
+				if(wire.getValueDeterminingComponent() == valueDeterminingComponent) {
 					wireToBeAddedTo = wire;
 				}
 			}
@@ -773,14 +783,10 @@ public class Schematic extends Canvas implements Serializable{
 	 * Loops through and sets the outputs of the components.
 	 * @return Whether or not an output was changed.
 	 */
-	public boolean setOutputs() {
-		boolean somethingChanged = false;
+	public void setOutputs() {
 		for(Component comp : currState.components) {
-			boolean oldOut = comp.output;
 			comp.calculateOutput();
-			if(oldOut != comp.output) somethingChanged = true;
 		}
-		return somethingChanged;
 	}
 	
 	/*
@@ -789,7 +795,7 @@ public class Schematic extends Canvas implements Serializable{
 	public void debugWires() {
 		System.out.println("NUM WIRES: " + currState.wires.size());
 		for (int i = 0; i < currState.wires.size(); i++) {
-			System.out.println("Wire " + i + "  |  " + currState.wires.get(i).lines.size() + " lines  |  " + "valueDeterminingComponent: " + currState.wires.get(i).valueDeterminingComponent);
+			System.out.println("Wire " + i + "  |  " + currState.wires.get(i).lines.size() + " lines  |  " + "valueDeterminingComponent: " + currState.wires.get(i).getValueDeterminingComponent());
 		}
 		System.out.println("_____________________________________________________________________________________________________________\n");
 	}

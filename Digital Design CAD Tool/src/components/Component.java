@@ -19,6 +19,8 @@
  */
 package components;
 
+import java.util.ArrayList;
+
 import com.sun.javafx.geom.Vec2d;
 
 import javafx.scene.canvas.GraphicsContext;
@@ -41,6 +43,8 @@ public abstract class Component implements Cloneable {
 	public int width, height;
 	public Vec2d outputLocation;
 	public Vec2d[] inputLocations;
+	public ArrayList<Component> connectedComponents;
+	public String name = null;
 
 	// Constructor.
 	public Component(int width, int height, double xPos, double yPos, int rotation, int numInputs, int ID) {
@@ -50,7 +54,8 @@ public abstract class Component implements Cloneable {
 		this.selected = false;
 		this.numInputs = numInputs;
 		this.ID = ID;
-
+		
+		connectedComponents = new ArrayList<Component>();
 		inputs = new Wire[numInputs];
 
 		// Location vectors
@@ -92,7 +97,7 @@ public abstract class Component implements Cloneable {
 		}
 		if(this instanceof IOPort) {
 			gc.setFill(Color.WHITE);
-			gc.fillText(Integer.toString(ID), (location.x - (location.x % 10))+10, (location.y - (location.y % 10))+23);
+			gc.fillText(name, (location.x - (location.x % 10))+10, (location.y - (location.y % 10))+23);
 		}
 	}
 
@@ -195,7 +200,7 @@ public abstract class Component implements Cloneable {
 				output = true;
 				for (Wire input : inputs) {
 					if (input == null) throw new Exception();
-					if (input.valueDeterminingComponent.output == false) {
+					if (input.getValueDeterminingComponent().output == false) {
 						output = false;
 					}
 				}
@@ -204,7 +209,7 @@ public abstract class Component implements Cloneable {
 				output = false;
 				for (Wire input : inputs) {
 					if (input == null) throw new Exception();
-					if (input.valueDeterminingComponent.output == true) {
+					if (input.getValueDeterminingComponent().output == true) {
 						output = true;
 					}
 				}
@@ -213,7 +218,7 @@ public abstract class Component implements Cloneable {
 				output = true;
 				for (Wire input : inputs) {
 					if (input == null) throw new Exception();
-					if (input.valueDeterminingComponent.output == false) {
+					if (input.getValueDeterminingComponent().output == false) {
 						output = false;
 					}
 				}
@@ -223,7 +228,7 @@ public abstract class Component implements Cloneable {
 				output = false;
 				for (Wire input : inputs) {
 					if (input == null) throw new Exception();
-					if (input.valueDeterminingComponent.output == true) {
+					if (input.getValueDeterminingComponent().output == true) {
 						output = true;
 					}
 				}
@@ -235,7 +240,7 @@ public abstract class Component implements Cloneable {
 				int numTrueValues = 0;
 				for (Wire input : inputs) {
 					if (input == null) throw new Exception();
-					if (input.valueDeterminingComponent.output)
+					if (input.getValueDeterminingComponent().output)
 						numTrueValues++;
 				}
 
@@ -246,13 +251,13 @@ public abstract class Component implements Cloneable {
 				}
 				break;
 			case "NOT":
-				output = !inputs[0].valueDeterminingComponent.output;
+				output = !inputs[0].getValueDeterminingComponent().output;
 				break;
 			case "IO_in":
 				// the output gets calculated during the simulation process when the user chooses the output. 
 				break;
 			case "IO_out":
-				output = inputs[0].valueDeterminingComponent.output;
+				output = inputs[0].getValueDeterminingComponent().output;
 				break;
 			case "IO_bi":
 				// TODO: figure this out

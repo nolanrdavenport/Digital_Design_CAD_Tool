@@ -42,7 +42,7 @@ public class SerializableWire implements Serializable{
 		
 		for(Component comp : components) {
 			if(comp.ID == valueDeterminingComponent.ID) {
-				wire.valueDeterminingComponent = comp;
+				wire.setValueDeterminingComponent(comp);
 			}
 		}
 		

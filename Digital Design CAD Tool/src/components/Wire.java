@@ -31,7 +31,7 @@ public class Wire implements Cloneable{
 	public ArrayList<Line> lines;
 
 	// Component that determines the binary value of this line.
-	public Component valueDeterminingComponent = null;
+	private Component valueDeterminingComponent = null;
 	
 	// Other general variables.
 	public boolean selected = false;
@@ -131,15 +131,6 @@ public class Wire implements Cloneable{
 	}
 
 	/*
-	 * Sets the value determining component.
-	 * 
-	 * @param comp The component that is to be the new value determining component.
-	 */
-	public void setValueDeterminingComponent(Component comp) {
-		valueDeterminingComponent = comp;
-	}
-
-	/*
 	 * @return Whether or not the x and y location sent in as parameter is a proper
 	 * click onto this wire.
 	 * 
@@ -148,7 +139,7 @@ public class Wire implements Cloneable{
 	 * @param y The y value of the click.
 	 */
 	public boolean clickedOnALine(double x, double y) {
-		float temp1 = Math.round((float) x / 10) * 10 - 1;
+		float temp1 = Math.round((float) x / 10) * 10;
 		float temp2 = Math.round((float) y / 10) * 10;
 		for (Line line : lines) {
 			// vertically
@@ -177,6 +168,20 @@ public class Wire implements Cloneable{
 	
 	public SerializableWire getSerializableWire() {
 		return new SerializableWire(lines, valueDeterminingComponent);
+	}
+	
+	/*
+	 * @return the value determining component
+	 */
+	public Component getValueDeterminingComponent() {
+		return valueDeterminingComponent;
+	}
+	
+	/*
+	 * @param comp The component that is to be the new value determining component.
+	 */
+	public void setValueDeterminingComponent(Component comp) {
+		valueDeterminingComponent = comp;
 	}
 
 }

@@ -37,6 +37,7 @@ public class IOPort extends Component{
 		this.direction = direction;
 		this.name = name;
 		this.id = "IO_"+direction;
+		super.name = name;
 		
 		@SuppressWarnings("rawtypes")
 		Class cls;
